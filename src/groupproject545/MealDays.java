@@ -82,7 +82,7 @@ public class MealDays {
         List<MealDays> mealDaysList = new ArrayList<MealDays>();
 
         Connection conn = ConnectDb.setupConnection();
-        String sqlStatement = "select * from MealDays where mealPlanTitle=?";
+        String sqlStatement = "select * from MealDay where mealPlanTitle=?";
         OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
         pst.setString(1, title);
         OracleResultSet rs = (OracleResultSet) pst.executeQuery();
@@ -95,7 +95,39 @@ public class MealDays {
                 String mealPlanTitle = rs.getString(4);
                 mealDaysList.add(new MealDays(mealTitle, mealName, dayOfWeek, mealPlanTitle));
             }
-            System.out.println("5");
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
+        }
+        return mealDaysList;
+    }
+    /**
+     * Gets mealDays by the Meal Name, don't know if needed
+     * @param name
+     * @return List of meal days
+     * @throws Exception 
+     */
+    public static List<MealDays> getByMealName(String name) throws Exception {
+        List<MealDays> mealDaysList = new ArrayList<MealDays>();
+
+        Connection conn = ConnectDb.setupConnection();
+        String sqlStatement = "select * from MealDay where mealName=?";
+        OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+        pst.setString(1, name);
+        OracleResultSet rs = (OracleResultSet) pst.executeQuery();
+        try {
+            
+            while (rs.next()) {
+                String dayOfWeek = rs.getString(1);
+                String mealTitle = rs.getString(2);
+                String mealName = rs.getString(3);
+                String mealPlanTitle = rs.getString(4);
+                mealDaysList.add(new MealDays(mealTitle, mealName, dayOfWeek, mealPlanTitle));
+            }
 
         } catch (Exception ex) {
             System.out.println(ex);

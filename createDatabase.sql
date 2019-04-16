@@ -95,4 +95,15 @@ insert into ingredients values('colby cheese','dairy','N','Calories per 8oz: 122
 insert into ingredients values('pepperjack cheese','dairy','Y','Calories per 8oz: 85');                           
 insert into ingredients values('lemon pepper seasoing','seasoning','Y','Calories per 8oz: 18');
                            
-                           
+insert into recipes values('recipe1','instruction1','category1'); 
+insert into recipes values('recipe2','instruction2','category2');
+insert into recipes values('recipe3','instruction3','category3');                           
+insert into recipes values('recipe4','instruction4','category4');                           
+insert into recipes values('recipe5','instruction5','category5');
+insert into recipes values('recipe6','instruction6','category6');
+insert into recipes values('recipe7','instruction7','category7');    
+insert into recipes values('recipe8','instruction8','category8');
+insert into recipes values('recipe9','instruction9','category9');
+insert into recipes values('recipe10','instruction10','category10');
+insert into recipes values('recipe11','instruction11','category11');
+insert into recipes values('recipe12','instruction12','category12');

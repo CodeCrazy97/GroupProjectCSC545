@@ -1,5 +1,9 @@
 package groupproject545;
 
+import java.awt.Component;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.text.Normalizer.Form;
 import javax.swing.JFrame;
 
 public class Main {
@@ -17,4 +21,5 @@ public class Main {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
 }

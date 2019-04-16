@@ -1,9 +1,16 @@
 package groupproject545;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 
@@ -21,6 +28,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
      * Creates new form MealPlanGUI
      */
     public MealPlanGUI() {
+        
         // Initialize components. Do not attempt to use GUI components (buttons, labels, etc.) until this has been done.
         initComponents();
 
@@ -32,9 +40,10 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
         // Place all meal plans in the drop-down menu.
         getMealPlans();
-
+       
     }
-
+    
+    
     private void getMealPlans() {
         conn = ConnectDb.setupConnection();
         try {
@@ -126,7 +135,6 @@ public class MealPlanGUI extends javax.swing.JPanel {
         scheduleTable = new javax.swing.JTable();
         messageLabel = new javax.swing.JLabel();
 
-        mealPlanComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         mealPlanComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mealPlanComboBoxActionPerformed(evt);
@@ -136,6 +144,11 @@ public class MealPlanGUI extends javax.swing.JPanel {
         selectPlanLabel.setText("Select Plan:");
 
         addMealPlanButton.setText("Add a Meal Plan");
+        addMealPlanButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addMealPlanButtonActionPerformed(evt);
+            }
+        });
 
         configureScheduleButton.setText("Configure Schedule");
 
@@ -221,6 +234,19 @@ public class MealPlanGUI extends javax.swing.JPanel {
         // Show the newly selected meal plan.
 
     }//GEN-LAST:event_mealPlanComboBoxActionPerformed
+
+    private void addMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealPlanButtonActionPerformed
+        // Go to screen where user can add a meal plan.
+        JFrame frame = new JFrame("Adding a Plan");
+
+        // Maximize the size of the jframe.
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);        
+        frame.add(new AddMealPlanGUI());
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+    }//GEN-LAST:event_addMealPlanButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addMealPlanButton;

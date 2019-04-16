@@ -96,6 +96,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         // Below is a custom designed close operation for the MealPlanGUI screen.
         // When the meal planner jframe is closed, reopen a new instance of the
         // WelcomeScreen.
+        
         WindowListener exitListener = new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 // Show the meal plans form.

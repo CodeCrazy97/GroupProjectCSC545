@@ -46,9 +46,12 @@ public class IngredientsGUI extends javax.swing.JPanel {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        // Hide the adding a new ingredient text field and label (until the user wants to add an ingredient)
+        ingredientNameTextField.setVisible(false);
+        ingredientNameLabel.setVisible(false);
+
         // Maximize the size of the jframe.
         //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
     }
 
     /**
@@ -67,12 +70,22 @@ public class IngredientsGUI extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         inStockCheckBox = new java.awt.Checkbox();
-        jTextField2 = new javax.swing.JTextField();
+        foodGroupTextField = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        nutritionFactsTextArea = new javax.swing.JTextArea();
         submitChangesButton = new javax.swing.JButton();
+        deleteIngredientButton = new javax.swing.JButton();
+        addNewIngredientButton = new javax.swing.JButton();
+        ingredientNameTextField = new javax.swing.JTextField();
+        ingredientNameLabel = new javax.swing.JLabel();
 
         button1.setLabel("button1");
+
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyPressed(evt);
+            }
+        });
 
         ingredientsComboBox.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         ingredientsComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -87,11 +100,15 @@ public class IngredientsGUI extends javax.swing.JPanel {
 
         jLabel2.setText("Food group:");
 
+        inStockCheckBox.setEnabled(false);
         inStockCheckBox.setLabel("Item in stock");
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        foodGroupTextField.setEditable(false);
+
+        nutritionFactsTextArea.setEditable(false);
+        nutritionFactsTextArea.setColumns(20);
+        nutritionFactsTextArea.setRows(5);
+        jScrollPane1.setViewportView(nutritionFactsTextArea);
 
         submitChangesButton.setText("Edit Ingredient");
         submitChangesButton.addActionListener(new java.awt.event.ActionListener() {
@@ -100,83 +117,193 @@ public class IngredientsGUI extends javax.swing.JPanel {
             }
         });
 
+        deleteIngredientButton.setText("Delete Ingredient");
+        deleteIngredientButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteIngredientButtonActionPerformed(evt);
+            }
+        });
+
+        addNewIngredientButton.setText("Add New Ingredient");
+        addNewIngredientButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addNewIngredientButtonActionPerformed(evt);
+            }
+        });
+
+        ingredientNameLabel.setText("Ingredient Name:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(addNewIngredientButton)
+                .addGap(34, 34, 34)
+                .addComponent(submitChangesButton)
+                .addGap(35, 35, 35)
+                .addComponent(deleteIngredientButton)
+                .addGap(129, 129, 129))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(46, 46, 46)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(62, 62, 62))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(101, 101, 101))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(73, 73, 73)
-                .addComponent(submitChangesButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(101, 101, 101))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(46, 46, 46))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(ingredientNameLabel)
+                                .addGap(18, 18, 18)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ingredientNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(62, 62, 62))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(217, Short.MAX_VALUE))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addComponent(ingredientNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ingredientNameLabel))
+                        .addGap(36, 36, 36)
+                        .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(jLabel1)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(14, 14, 14)
+                                .addComponent(jLabel1)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addGap(27, 27, 27)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addGap(36, 36, 36)
-                .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
-                .addComponent(submitChangesButton)
-                .addGap(22, 22, 22))
+                    .addComponent(submitChangesButton)
+                    .addComponent(deleteIngredientButton)
+                    .addComponent(addNewIngredientButton))
+                .addGap(21, 21, 21))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void ingredientsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ingredientsComboBoxActionPerformed
-        // TODO add your handling code here:
+        System.out.println("picked");
     }//GEN-LAST:event_ingredientsComboBoxActionPerformed
 
     private void submitChangesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitChangesButtonActionPerformed
         if (submitChangesButton.getText().equals("Edit Ingredient")) {  // Change to "Submit Changes"
             submitChangesButton.setText("Submit Changes");
+            deleteIngredientButton.setText("Cancel");
+            addNewIngredientButton.setVisible(false);
+            // Allow editing of input elements.
+            inStockCheckBox.setEnabled(true);
+            foodGroupTextField.setEditable(true);
+            nutritionFactsTextArea.setEditable(true);
+
+            ingredientNameLabel.setVisible(true);
+            ingredientNameTextField.setVisible(true);
+            // Place the selected ingredient's name into the text box.
+            ingredientNameTextField.setText((String) ingredientsComboBox.getSelectedItem());
+            ingredientsComboBox.setVisible(false);
         } else {  // Change to "Edit Ingredient"
             submitChangesButton.setText("Edit Ingredient");
+            addNewIngredientButton.setVisible(true);
+            // Prevent editing of ingredients.
+            inStockCheckBox.setEnabled(false);
+            foodGroupTextField.setEditable(false);
+            nutritionFactsTextArea.setEditable(false);
+
+            ingredientNameLabel.setVisible(false);
+            ingredientNameTextField.setVisible(false);
+            ingredientsComboBox.setVisible(true);
+            // Place the selected ingredient's name into the text box.
+            ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
+            ingredientsComboBox.addItem(ingredientNameTextField.getText());
         }
     }//GEN-LAST:event_submitChangesButtonActionPerformed
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
 
+    }//GEN-LAST:event_formKeyPressed
+
+    private void addNewIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewIngredientButtonActionPerformed
+        if (addNewIngredientButton.getText().equals("Add New Ingredient")) {  // User wants to add a new ingredient. Hide some elements.
+            addNewIngredientButton.setText("Submit New Ingredient");
+
+            ingredientsComboBox.setVisible(false);
+            submitChangesButton.setVisible(false);
+            deleteIngredientButton.setText("Cancel");
+            nutritionFactsTextArea.setEditable(true);
+            ingredientNameTextField.setVisible(true);
+            ingredientNameLabel.setVisible(true);
+            foodGroupTextField.setEditable(true);
+            inStockCheckBox.setEnabled(true);
+        } else {  // Do opposite of if condition.
+            addNewIngredientButton.setText("Add New Ingredient");
+            foodGroupTextField.setEditable(false);
+            inStockCheckBox.setEnabled(false);
+            ingredientsComboBox.setVisible(true);
+            submitChangesButton.setVisible(true);
+            deleteIngredientButton.setText("Delete Ingredient");
+            nutritionFactsTextArea.setEditable(false);
+            ingredientNameTextField.setVisible(false);
+            ingredientNameLabel.setVisible(false);
+        }
+    }//GEN-LAST:event_addNewIngredientButtonActionPerformed
+
+    private void deleteIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteIngredientButtonActionPerformed
+        submitChangesButton.setText("Edit Ingredient");
+        if (deleteIngredientButton.getText().equals("Cancel")) {
+
+            // Was in adding a new ingredient mode. Go back to viewing ingredient mode.
+            addNewIngredientButton.setText("Add New Ingredient");
+            foodGroupTextField.setEditable(false);
+            inStockCheckBox.setEnabled(false);
+            ingredientsComboBox.setVisible(true);
+            submitChangesButton.setVisible(true);
+            deleteIngredientButton.setText("Delete Ingredient");
+            nutritionFactsTextArea.setEditable(false);
+            ingredientNameTextField.setVisible(false);
+            ingredientNameLabel.setVisible(false);
+        } else {  // Remove ingredient from screen and database.
+            ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
+
+        }
+    }//GEN-LAST:event_deleteIngredientButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addNewIngredientButton;
     private java.awt.Button button1;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.JButton deleteIngredientButton;
+    private javax.swing.JTextField foodGroupTextField;
     private java.awt.Checkbox inStockCheckBox;
+    private javax.swing.JLabel ingredientNameLabel;
+    private javax.swing.JTextField ingredientNameTextField;
     private javax.swing.JComboBox<String> ingredientsComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextArea nutritionFactsTextArea;
     private javax.swing.JButton submitChangesButton;
     // End of variables declaration//GEN-END:variables
 

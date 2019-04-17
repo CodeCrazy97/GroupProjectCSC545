@@ -63,7 +63,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        dateChooserDialog1 = new datechooser.beans.DateChooserDialog();
         submitButton = new javax.swing.JButton();
         jComboBox1 = new javax.swing.JComboBox<>();
         jTextField1 = new javax.swing.JTextField();
@@ -216,7 +215,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private datechooser.beans.DateChooserDialog dateChooserDialog1;
     private javax.swing.JButton deleteButton;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;

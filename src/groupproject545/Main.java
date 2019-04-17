@@ -13,7 +13,7 @@ public class Main {
         JFrame frame = new JFrame("Welcome");
 
         // Maximize the size of the jframe.
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // Exits the program after the JFrame is closed by the user.
         frame.add(new WelcomeScreenGUI());

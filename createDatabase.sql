@@ -54,7 +54,7 @@ nextOccurrence date default to_date('1900-01-01', 'YYYY-MM-DD')   -- Date when t
 );
 
 create table mealDay(
-dayOfWeek varchar(9), 
+dayOfWeek varchar(9) check (mealDay in ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')), 
 mealTitle varchar(100),
 mealName varchar(100),
 mealPlanTitle varchar(100),

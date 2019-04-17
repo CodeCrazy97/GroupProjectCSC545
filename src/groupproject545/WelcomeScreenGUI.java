@@ -5,13 +5,6 @@
  */
 package groupproject545;
 
-import java.awt.Component;
-import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import static java.awt.event.WindowEvent.WINDOW_CLOSING;
-import java.awt.event.WindowListener;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -43,6 +36,11 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         mealPlansButton = new javax.swing.JButton();
 
         ingredientsButton.setText("Ingredients");
+        ingredientsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ingredientsButtonActionPerformed(evt);
+            }
+        });
 
         recipesButton.setText("Recipes");
 
@@ -60,28 +58,26 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(94, 94, 94)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mealsButton)
-                    .addComponent(ingredientsButton))
-                .addGap(72, 72, 72)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(recipesButton)
-                    .addComponent(mealPlansButton))
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(ingredientsButton)
+                .addGap(18, 18, 18)
+                .addComponent(mealsButton)
+                .addGap(18, 18, 18)
+                .addComponent(mealPlansButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(recipesButton)
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(46, 46, 46)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ingredientsButton)
-                    .addComponent(recipesButton))
-                .addGap(43, 43, 43)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(mealsButton)
-                    .addComponent(mealPlansButton))
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(254, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ingredientsButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(recipesButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(mealsButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(mealPlansButton, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(21, 21, 21))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -90,36 +86,21 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         // Show the meal plans form.
         JFrame frame = new JFrame("My Meal Planner");
 
-        // Maximize the size of the jframe.
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        // Below is a custom designed close operation for the MealPlanGUI screen.
-        // When the meal planner jframe is closed, reopen a new instance of the
-        // WelcomeScreen.
+        MealPlanGUI mealPlans = new MealPlanGUI(frame);
         
-        WindowListener exitListener = new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                // Show the meal plans form.
-                JFrame welcomeScreen = new JFrame("Welcome");
-
-                // Maximize the size of the jframe.
-                welcomeScreen.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                welcomeScreen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // Exits the program after the JFrame is closed by the user.
-                welcomeScreen.add(new WelcomeScreenGUI());
-                welcomeScreen.pack();
-                welcomeScreen.setLocationRelativeTo(null);
-                welcomeScreen.setVisible(true);
-            }
-        };
-        frame.addWindowListener(exitListener);  // Add the custom designed listener.
-
-        frame.add(new MealPlanGUI());
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-
         ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the welcome menu.
     }//GEN-LAST:event_mealPlansButtonActionPerformed
+
+    private void ingredientsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ingredientsButtonActionPerformed
+
+        // Show the meal plans form.
+        JFrame frame = new JFrame("My Ingredients");
+
+        // Show the ingredients form.
+        IngredientsGUI ingredientsScreen = new IngredientsGUI(frame);
+
+        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the welcome menu.
+    }//GEN-LAST:event_ingredientsButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ingredientsButton;

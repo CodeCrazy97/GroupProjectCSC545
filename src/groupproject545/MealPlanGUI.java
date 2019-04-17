@@ -1,7 +1,5 @@
 package groupproject545;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -27,8 +25,8 @@ public class MealPlanGUI extends javax.swing.JPanel {
     /**
      * Creates new form MealPlanGUI
      */
-    public MealPlanGUI() {
-        
+    public MealPlanGUI(JFrame frame) {
+
         // Initialize components. Do not attempt to use GUI components (buttons, labels, etc.) until this has been done.
         initComponents();
 
@@ -40,10 +38,35 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
         // Place all meal plans in the drop-down menu.
         getMealPlans();
-       
+
+        // Below is a custom designed close operation for the MealPlanGUI screen.
+        // When the meal planner jframe is closed, reopen a new instance of the
+        // WelcomeScreen.
+        WindowListener exitListener = new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                // Show the meal plans form.
+                JFrame welcomeScreen = new JFrame("Welcome");
+
+                // Maximize the size of the jframe.
+                //welcomeScreen.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                welcomeScreen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // Exits the program after the JFrame is closed by the user.
+                welcomeScreen.add(new WelcomeScreenGUI());
+                welcomeScreen.pack();
+                welcomeScreen.setLocationRelativeTo(null);
+                welcomeScreen.setVisible(true);
+            }
+        };
+        frame.addWindowListener(exitListener);  // Add the custom designed listener.
+
+        // Maximize the size of the jframe.
+        //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.add(this);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
     }
-    
-    
+
     private void getMealPlans() {
         conn = ConnectDb.setupConnection();
         try {
@@ -61,6 +84,9 @@ public class MealPlanGUI extends javax.swing.JPanel {
                 // Let the user know there are not any meal plans.
                 messageLabel.setText("You currently do not have any meal plans.");
                 messageLabel.setVisible(true);
+
+                // Hide the edit meal plan button.
+                editMealPlanButton.setVisible(false);
             } else {
                 // Place all the meal plans in the drop down menu.
                 while (rs.next()) {
@@ -92,7 +118,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
                     } else {
                         // Place all meals in the jtable.
                         while (rs.next()) {
-                            
+
                             // There should be only one meal plan active per week, so we can exit after just one iteration.
                             break;
                         }
@@ -100,7 +126,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
                 } catch (Exception e) {
                     System.out.println(e);
                     JOptionPane.showMessageDialog(null, e);
-                } 
+                }
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -151,8 +177,18 @@ public class MealPlanGUI extends javax.swing.JPanel {
         });
 
         configureScheduleButton.setText("Configure Schedule");
+        configureScheduleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configureScheduleButtonActionPerformed(evt);
+            }
+        });
 
         editMealPlanButton.setText("Edit Plan");
+        editMealPlanButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editMealPlanButtonActionPerformed(evt);
+            }
+        });
 
         scheduleTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -239,14 +275,20 @@ public class MealPlanGUI extends javax.swing.JPanel {
         // Go to screen where user can add a meal plan.
         JFrame frame = new JFrame("Adding a Plan");
 
-        // Maximize the size of the jframe.
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);        
-        frame.add(new AddMealPlanGUI());
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-
+        AddMealPlanGUI addMealPlan = new AddMealPlanGUI(null, frame);
+        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
     }//GEN-LAST:event_addMealPlanButtonActionPerformed
+
+    private void editMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMealPlanButtonActionPerformed
+        // Get the title of the currently selected meal plan.
+    }//GEN-LAST:event_editMealPlanButtonActionPerformed
+
+    private void configureScheduleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureScheduleButtonActionPerformed
+        // Show the schedule editor screen.
+        JFrame frame = new JFrame("Schedule Editor");
+        ConfigureScheduleGUI configureScheduleGUI = new ConfigureScheduleGUI(frame);
+        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
+    }//GEN-LAST:event_configureScheduleButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addMealPlanButton;

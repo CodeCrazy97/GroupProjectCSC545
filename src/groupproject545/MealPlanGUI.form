@@ -98,11 +98,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Configure Schedule"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="configureScheduleButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="editMealPlanButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Edit Plan"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editMealPlanButtonActionPerformed"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JPanel" name="scheduleHoldingPanel">
 

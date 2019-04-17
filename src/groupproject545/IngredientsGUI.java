@@ -256,7 +256,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
             ingredientNameLabel.setVisible(true);
             foodGroupTextField.setEditable(true);
             inStockCheckBox.setEnabled(true);
-        } else {  // Do opposite of if condition.
+        } else {  // Do opposite of if condition. Add ingredient to screen and database.
             addNewIngredientButton.setText("Add New Ingredient");
             foodGroupTextField.setEditable(false);
             inStockCheckBox.setEnabled(false);
@@ -266,6 +266,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
             nutritionFactsTextArea.setEditable(false);
             ingredientNameTextField.setVisible(false);
             ingredientNameLabel.setVisible(false);
+            deleteIngredientButton.setVisible(true);
+            submitChangesButton.setVisible(true);
         }
     }//GEN-LAST:event_addNewIngredientButtonActionPerformed
 
@@ -285,7 +287,10 @@ public class IngredientsGUI extends javax.swing.JPanel {
             ingredientNameLabel.setVisible(false);
         } else {  // Remove ingredient from screen and database.
             ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
-
+            if (ingredientsComboBox.getItemCount() == 0) {  // NOthing to delete/edit.
+                deleteIngredientButton.setVisible(false);
+                submitChangesButton.setVisible(false);
+            }
         }
     }//GEN-LAST:event_deleteIngredientButtonActionPerformed
 

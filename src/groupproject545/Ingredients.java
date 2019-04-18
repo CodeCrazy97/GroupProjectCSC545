@@ -72,7 +72,7 @@ public class Ingredients {
         Connection conn = ConnectDb.setupConnection();
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
         try {
-            String sqlStatement = "select name, foodGroup, inStock, nutritionFacts from INGREDIENTS where inStock='Y'";
+            String sqlStatement = "select * from INGREDIENTS where inStock='Y'";
 
             OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
@@ -100,7 +100,7 @@ public class Ingredients {
         Connection conn = ConnectDb.setupConnection();
         List<Ingredients> AllIngredients = new ArrayList<Ingredients>();
         try {
-            String sqlStatement = "select name, foodGroup, inStock, nutritionFacts from INGREDIENTS where inStock='Y'";
+            String sqlStatement = "select * from INGREDIENTS where inStock='Y'";
 
             OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 

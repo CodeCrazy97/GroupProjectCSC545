@@ -54,7 +54,7 @@ nextOccurrence date default to_date('1900-01-01', 'YYYY-MM-DD')   -- Date when t
 );
 
 create table mealDay(
-dayOfWeek varchar(9) check (mealDay in ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')), 
+dayOfWeek varchar(9) check (dayOfWeek in ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')), 
 mealTitle varchar(100),
 mealName varchar(100),
 mealPlanTitle varchar(100),
@@ -96,6 +96,10 @@ insert into ingredients values('pepperjack cheese','dairy','Y','Calories per 8oz
 insert into ingredients values('lemon pepper seasoing','seasoning','Y','Calories per 8oz: 18');
                            
 insert into recipes values('recipe1','instruction1','category1'); 
+
+insert into callsFor values ('pineapple', 'recipe1');
+insert into callsFor values ('2% milk', 'recipe1');
+
 insert into recipes values('recipe2','instruction2','category2');
 insert into recipes values('recipe3','instruction3','category3');                           
 insert into recipes values('recipe4','instruction4','category4');                           

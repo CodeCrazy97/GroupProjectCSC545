@@ -70,7 +70,7 @@ public class Ingredients {
      */
     public List<Ingredients> getInStockIngredients() {
         Connection conn = ConnectDb.setupConnection();
-        List<Ingredients> inStockIngredients = new List<Ingredients>();
+        List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
         try {
             String sqlStatement = "select name, foodGroup, inStock, nutritionFacts from INGREDIENTS where inStock='Y'";
 

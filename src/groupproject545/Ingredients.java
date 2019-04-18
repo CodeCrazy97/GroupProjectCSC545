@@ -68,7 +68,7 @@ public class Ingredients {
      * Gets list of inStock ingredients
      * @return      list of Ingredients
      */
-    public List<Ingredients> getInStockIngredients() {
+    public static List<Ingredients> getInStockIngredients() {
         Connection conn = ConnectDb.setupConnection();
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
         try {
@@ -92,13 +92,40 @@ public class Ingredients {
         }
         return inStockIngredients;
     }
+    /**
+     * Gets all ingredients
+     * @return List of all ingredients
+     */
+    public static List<Ingredients> getAllIngredients() {
+        Connection conn = ConnectDb.setupConnection();
+        List<Ingredients> AllIngredients = new ArrayList<Ingredients>();
+        try {
+            String sqlStatement = "select name, foodGroup, inStock, nutritionFacts from INGREDIENTS where inStock='Y'";
 
+            OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+
+            OracleResultSet rs = (OracleResultSet) pst.executeQuery();
+            while (rs.next()) {
+                String name = rs.getString(1);
+                String foodGroup = rs.getString(2);
+                String inStock = rs.getString(3);
+                String nutritionFacts = rs.getString(4);
+                // ternary operator
+                boolean isInStock = inStock.equals("Y");
+                AllIngredients.add(new Ingredients(name, foodGroup, isInStock, nutritionFacts));
+            }
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+        return AllIngredients;
+    }
     /**
      * Updates the ingredient in the database
      * TODO
      */
     public void updateIngredient() throws Exception {
-        conn = ConnectDb.setupConnection();
+        Connection conn = ConnectDb.setupConnection();
 
     }
 

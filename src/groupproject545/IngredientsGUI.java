@@ -238,6 +238,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
             // Place the selected ingredient's name into the text box.
             ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
             ingredientsComboBox.addItem(ingredientNameTextField.getText());
+            deleteIngredientButton.setText("Delete Ingredient");
         }
     }//GEN-LAST:event_submitChangesButtonActionPerformed
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
@@ -274,7 +275,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private void deleteIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteIngredientButtonActionPerformed
         submitChangesButton.setText("Edit Ingredient");
         if (deleteIngredientButton.getText().equals("Cancel")) {
-
+            addNewIngredientButton.setVisible(true);
             // Was in adding a new ingredient mode. Go back to viewing ingredient mode.
             addNewIngredientButton.setText("Add New Ingredient");
             foodGroupTextField.setEditable(false);

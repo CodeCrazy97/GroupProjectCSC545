@@ -43,6 +43,11 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         });
 
         recipesButton.setText("Recipes");
+        recipesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                recipesButtonActionPerformed(evt);
+            }
+        });
 
         mealsButton.setText("Meals");
 
@@ -60,13 +65,13 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(ingredientsButton)
-                .addGap(18, 18, 18)
-                .addComponent(mealsButton)
-                .addGap(18, 18, 18)
-                .addComponent(mealPlansButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(17, 17, 17)
                 .addComponent(recipesButton)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addGap(28, 28, 28)
+                .addComponent(mealsButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addComponent(mealPlansButton)
+                .addGap(27, 27, 27))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -74,9 +79,10 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
                 .addContainerGap(254, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ingredientsButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(recipesButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mealsButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mealPlansButton, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(mealPlansButton)
+                        .addComponent(recipesButton)
+                        .addComponent(mealsButton)))
                 .addGap(21, 21, 21))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -101,6 +107,17 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
 
         ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the welcome menu.
     }//GEN-LAST:event_ingredientsButtonActionPerformed
+
+    private void recipesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recipesButtonActionPerformed
+
+        // Show the recipes form.
+        JFrame frame = new JFrame("My Recipes");
+
+        RecipesGUI recipes = new RecipesGUI(frame);
+        
+        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the welcome menu.
+
+    }//GEN-LAST:event_recipesButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ingredientsButton;

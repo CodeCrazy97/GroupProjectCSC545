@@ -24,8 +24,8 @@ nutritionFacts varchar(3000)
 
 create table recipes(
 title varchar(100) primary key,
-instructions varchar(3000) not null,
-category varchar(100) not null
+instructions varchar(3000),
+category varchar(100)
 );
 
 create table callsFor(

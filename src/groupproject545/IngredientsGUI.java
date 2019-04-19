@@ -263,11 +263,11 @@ public class IngredientsGUI extends javax.swing.JPanel {
         return true;
     }
 
-    private boolean ingredientDoesNotAlreadyExist(boolean editingExisting, String ingredientName) {
+    private boolean ingredientDoesNotAlreadyExist(boolean editingMode, String ingredientName) {
         // Check if the ingredient is already in the list.
         int selectedIngredient = ingredientsComboBox.getSelectedIndex();
         for (int i = 0; i < ingredientsList.size(); i++) {
-            if (editingExisting && i == selectedIngredient) {  // Don't want this method throwing an error because user isn't changing the ingredient's name (could be changing it's nutrition facts, for example)
+            if (editingMode && i == selectedIngredient) {  // Don't want this method throwing an error because user isn't changing the ingredient's name (could be changing it's nutrition facts, for example)
                 continue;
             }
             if (ingredientsList.get(i).getName().equals(ingredientName)) {

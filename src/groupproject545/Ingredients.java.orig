@@ -75,15 +75,14 @@ public class Ingredients {
      *
      * @return list of Ingredients
      */
-<<<<<<< HEAD
+
     public List<Ingredients> getInStockIngredients() {
-=======
+
     public static List<Ingredients> getInStockIngredients() {
         Connection conn = ConnectDb.setupConnection();
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
         try {
             String sqlStatement = "select * from INGREDIENTS where inStock='Y'";
->>>>>>> da42d7a166da2b88b126361a127aad8ea217838b
 
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
 

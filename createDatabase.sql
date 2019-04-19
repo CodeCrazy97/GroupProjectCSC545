@@ -17,9 +17,9 @@ drop table MEALDAY cascade constraints;
  
 create table ingredients(
 name varchar(100) primary key,
-foodGroup varchar(100) not null,
+foodGroup varchar(100),
 inStock varchar2(1) check (inStock in ('Y', 'N')),					-- This determines if the ingredient is in stock ('Y' means it is; 'N' means it isn't)
-nutritionFacts varchar(3000) not null
+nutritionFacts varchar(3000)
 );
 
 create table recipes(

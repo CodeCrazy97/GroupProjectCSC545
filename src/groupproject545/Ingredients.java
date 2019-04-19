@@ -111,10 +111,10 @@ public class Ingredients {
      * @return List of all ingredients
      */
     public List<Ingredients> getAllIngredients() {
-        Connection conn = ConnectDb.setupConnection();
+        conn = ConnectDb.setupConnection();
         List<Ingredients> AllIngredients = new ArrayList<Ingredients>();
         try {
-            String sqlStatement = "select * from INGREDIENTS";
+            String sqlStatement = "select * from INGREDIENTS order by name";  // Get all ingredients, sorting by name.
 
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 

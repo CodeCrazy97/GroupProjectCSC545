@@ -23,7 +23,6 @@ public class ConnectDb {
         // Try to setup the connection.
         try {
             Class.forName(jdbcDriver);
-
             Connection conn = DriverManager.getConnection(jdbcUrl, username, password);
             return conn;
         } catch (Exception e) {

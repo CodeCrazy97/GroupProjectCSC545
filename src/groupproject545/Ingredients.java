@@ -10,11 +10,17 @@ import oracle.jdbc.OracleResultSet;
  */
 public class Ingredients {
 
+    //
+    Connection conn = null;
+    OraclePreparedStatement pst = null;
+    OracleResultSet rs = null;
+
     private String name;
 
     private String foodGroup;
     private boolean inStock;
     private String nutritionFacts;
+
     /**
      * Constructor
      */
@@ -24,6 +30,7 @@ public class Ingredients {
         this.inStock = false;
         this.nutritionFacts = "";
     }
+
     public Ingredients(String name, String foodGroup, boolean inStock, String nutritionFacts) {
         this.name = name;
         this.foodGroup = foodGroup;
@@ -38,7 +45,6 @@ public class Ingredients {
     public void setName(String name) {
         this.name = name;
     }
-
 
     public String getFoodGroup() {
         return foodGroup;
@@ -66,18 +72,20 @@ public class Ingredients {
 
     /**
      * Gets list of inStock ingredients
-     * @return      list of Ingredients
+     *
+     * @return list of Ingredients
      */
     public List<Ingredients> getInStockIngredients() {
-        Connection conn = ConnectDb.setupConnection();
+
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
+
+        conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select name, foodGroup, inStock, nutritionFacts from INGREDIENTS where inStock='Y'";
-
-            OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-
-            OracleResultSet rs = (OracleResultSet) pst.executeQuery();
+            String sqlStatement = "select * from INGREDIENTS where inStock='Y'";
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
+                System.out.println("in while loop");
                 String name = rs.getString(1);
                 String foodGroup = rs.getString(2);
                 String inStock = rs.getString(3);
@@ -86,19 +94,23 @@ public class Ingredients {
                 boolean isInStock = inStock.equals("Y");
                 inStockIngredients.add(new Ingredients(name, foodGroup, isInStock, nutritionFacts));
             }
+            System.out.println("5");
 
         } catch (Exception ex) {
             System.out.println(ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
         }
         return inStockIngredients;
     }
 
     /**
-     * Updates the ingredient in the database
-     * TODO
+     * Updates the ingredient in the database TODO
      */
     public void updateIngredient() throws Exception {
-        conn = ConnectDb.setupConnection();
+        Connection conn = ConnectDb.setupConnection();
 
     }
 

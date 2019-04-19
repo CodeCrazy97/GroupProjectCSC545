@@ -111,3 +111,5 @@ insert into recipes values('recipe9','instruction9','category9');
 insert into recipes values('recipe10','instruction10','category10');
 insert into recipes values('recipe11','instruction11','category11');
 insert into recipes values('recipe12','instruction12','category12');
+
+commit;

@@ -8,6 +8,8 @@ package groupproject545;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -16,6 +18,9 @@ import javax.swing.SwingUtilities;
  * @author Ethan_2
  */
 public class IngredientsGUI extends javax.swing.JPanel {
+
+    public Ingredients ingredientClass = new Ingredients();
+    public List<Ingredients> ingredientsList = new ArrayList<Ingredients>();
 
     /**
      * Creates new form IngredientsGUI
@@ -50,8 +55,16 @@ public class IngredientsGUI extends javax.swing.JPanel {
         ingredientNameTextField.setVisible(false);
         ingredientNameLabel.setVisible(false);
 
-        // Maximize the size of the jframe.
-        //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        // Put the ingredients in the combo box.
+        populateComboBox();
+    }
+
+    private void populateComboBox() {
+        ingredientsList = ingredientClass.getInStockIngredients();
+        ingredientsComboBox.removeAllItems(); // Remove anything that was already in the combo box.
+        for (int i = 0; i < ingredientsList.size(); i++) {
+            ingredientsComboBox.addItem(ingredientsList.get(i).getName());
+        }
     }
 
     /**

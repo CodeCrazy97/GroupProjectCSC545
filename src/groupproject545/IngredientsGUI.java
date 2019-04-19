@@ -60,7 +60,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
     }
 
     private void populateComboBox() {
-        ingredientsList = ingredientClass.getInStockIngredients();
+        ingredientsList = ingredientClass.getAllIngredients();
         ingredientsComboBox.removeAllItems(); // Remove anything that was already in the combo box.
         for (int i = 0; i < ingredientsList.size(); i++) {
             ingredientsComboBox.addItem(ingredientsList.get(i).getName());

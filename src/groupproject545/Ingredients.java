@@ -11,9 +11,9 @@ import oracle.jdbc.OracleResultSet;
 public class Ingredients {
 
     //
-    Connection conn = null;
-    OraclePreparedStatement pst = null;
-    OracleResultSet rs = null;
+    static Connection conn = null;
+    static OraclePreparedStatement pst = null;
+    static OracleResultSet rs = null;
 
     private String name;
 
@@ -75,15 +75,8 @@ public class Ingredients {
      *
      * @return list of Ingredients
      */
-
     public List<Ingredients> getInStockIngredients() {
-
-    public static List<Ingredients> getInStockIngredients() {
         Connection conn = ConnectDb.setupConnection();
-        List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
-        try {
-            String sqlStatement = "select * from INGREDIENTS where inStock='Y'";
-
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
 
         conn = ConnectDb.setupConnection();
@@ -92,7 +85,6 @@ public class Ingredients {
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
-                System.out.println("in while loop");
                 String name = rs.getString(1);
                 String foodGroup = rs.getString(2);
                 String inStock = rs.getString(3);
@@ -112,19 +104,21 @@ public class Ingredients {
         }
         return inStockIngredients;
     }
+
     /**
      * Gets all ingredients
+     *
      * @return List of all ingredients
      */
-    public static List<Ingredients> getAllIngredients() {
+    public List<Ingredients> getAllIngredients() {
         Connection conn = ConnectDb.setupConnection();
         List<Ingredients> AllIngredients = new ArrayList<Ingredients>();
         try {
-            String sqlStatement = "select * from INGREDIENTS where inStock='Y'";
+            String sqlStatement = "select * from INGREDIENTS";
 
-            OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
-            OracleResultSet rs = (OracleResultSet) pst.executeQuery();
+            rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
                 String name = rs.getString(1);
                 String foodGroup = rs.getString(2);
@@ -137,9 +131,14 @@ public class Ingredients {
 
         } catch (Exception ex) {
             System.out.println(ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
         }
         return AllIngredients;
     }
+
     /**
      * Updates the ingredient in the database TODO
      */

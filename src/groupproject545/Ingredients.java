@@ -76,7 +76,6 @@ public class Ingredients {
      * @return list of Ingredients
      */
     public List<Ingredients> getInStockIngredients() {
-        Connection conn = ConnectDb.setupConnection();
         List<Ingredients> inStockIngredients = new ArrayList<Ingredients>();
 
         conn = ConnectDb.setupConnection();

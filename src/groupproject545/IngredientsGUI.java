@@ -307,31 +307,14 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 String nutritionFacts = nutritionFactsTextArea.getText();
                 Ingredients ingredient = new Ingredients(name, foodGroup, inStock, nutritionFacts);
 
-                // Update the database.
-                try {
-
-                    String inStockStr = "N";
-                    if (inStock) {
-                        inStockStr = "Y";
-                    }
-                    String sqlUpdateStmt = "update INGREDIENTS set name = '" + name
-                            + "', foodGroup = '" + foodGroup + "', inStock = '" + inStockStr
-                            + "', nutritionFacts = '" + nutritionFacts
-                            + "' where name = '" + oldName + "'";
-
-                    conn = ConnectDb.setupConnection();
-                    stmt = conn.createStatement();
-                    stmt.executeUpdate(sqlUpdateStmt);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-                } finally {
-                    try {  // Try closing the connection and the statement.
-                        conn.close();
-                        stmt.close();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
-                    }
+                System.out.println("old name = " + ingredientsComboBox.getSelectedItem().toString() + ", new name = " + name);
+                String oldName = ingredientsComboBox.getSelectedItem().toString();
+                if (oldName.equals(name)) {  // Old and new names are equal. Don't try inserting into Ingredients and CallsFor tables.
+                    updateIngredientsNoNameChange(name, foodGroup, inStock, nutritionFacts);
+                } else {  // Ingredient name has been changed.
+                    updateIngredientsNameChange(name, foodGroup, inStock, nutritionFacts);
                 }
+
                 ingredientsList.remove(ingredientsComboBox.getSelectedIndex());  // Remove the item from the combo box and list (will add the modified item shortly)
                 ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
 
@@ -384,29 +367,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 String nutritionFacts = nutritionFactsTextArea.getText();
                 Ingredients ingredient = new Ingredients(name, foodGroup, inStock, nutritionFacts);
 
-                // Insert the item into the database.
-                try {
-
-                    // Turn the boolean inStock into a string so it can be inserted into the database.
-                    String inStockStr = "N";
-                    if (inStock) {
-                        inStockStr = "Y";
-                    }
-                    String sqlInsertStmt = "insert into INGREDIENTS values ('" + name + "', '" + foodGroup + "', '" + inStockStr + "', '" + nutritionFacts + "')";
-
-                    conn = ConnectDb.setupConnection();
-                    stmt = conn.createStatement();
-                    stmt.executeUpdate(sqlInsertStmt);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-                } finally {
-                    try {  // Try closing the connection and the statement.
-                        conn.close();
-                        stmt.close();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
-                    }
-                }
+                // Insert the new ingredient into the db.
+                insertIntoIngredients(name, foodGroup, inStock, nutritionFacts);
 
                 // Place new item in the list and combo box.
                 ingredientsList.add(0, ingredient);
@@ -451,22 +413,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
             ingredientsComboBox.setSelectedIndex(0);
         } else {  // Remove ingredient from screen and database.
             // Delete from db.
-            try {
-                String sqlDeleteStmt = "delete from INGREDIENTS where name = '" + ingredientsComboBox.getSelectedItem() + "'";
-
-                conn = ConnectDb.setupConnection();
-                stmt = conn.createStatement();
-                stmt.executeUpdate(sqlDeleteStmt);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-            } finally {
-                try {  // Try closing the connection and the statement.
-                    conn.close();
-                    stmt.close();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
-                }
-            }
+            deleteFromIngredients(ingredientsComboBox.getSelectedItem().toString());
 
             ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
             if (ingredientsComboBox.getItemCount() == 0) {  // NOthing to delete/edit.
@@ -476,6 +423,107 @@ public class IngredientsGUI extends javax.swing.JPanel {
 
         }
     }//GEN-LAST:event_deleteIngredientButtonActionPerformed
+
+    private void updateIngredientsNameChange(String name, String foodGroup, boolean inStock, String nutritionFacts) {
+        // Update the database.
+        try {
+
+            String inStockStr = "N";
+            if (inStock) {
+                inStockStr = "Y";
+            }
+            String sqlUpdateStmt = "update INGREDIENTS set name = '" + name + "', "
+                    + " foodGroup = '" + foodGroup + "', inStock = '" + inStockStr
+                    + "', nutritionFacts = '" + nutritionFacts
+                    + "' where name = '" + oldName + "'";
+            System.out.println("name changed. SQL = " + sqlUpdateStmt);
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlUpdateStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void updateIngredientsNoNameChange(String name, String foodGroup, boolean inStock, String nutritionFacts) {
+        // Update the database.
+        try {
+
+            String inStockStr = "N";
+            if (inStock) {
+                inStockStr = "Y";
+            }
+            String sqlUpdateStmt = "update INGREDIENTS set "
+                    + " foodGroup = '" + foodGroup + "', inStock = '" + inStockStr
+                    + "', nutritionFacts = '" + nutritionFacts
+                    + "' where name = '" + name + "'";
+
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlUpdateStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void insertIntoIngredients(String name, String foodGroup, boolean inStock, String nutritionFacts) {
+        // Insert the item into the database.
+        try {
+
+            // Turn the boolean inStock into a string so it can be inserted into the database.
+            String inStockStr = "N";
+            if (inStock) {
+                inStockStr = "Y";
+            }
+            String sqlInsertStmt = "insert into INGREDIENTS values ('" + name + "', '" + foodGroup + "', '" + inStockStr + "', '" + nutritionFacts + "')";
+
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlInsertStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void deleteFromIngredients(String ingredient) {
+        try {
+            String sqlDeleteStmt = "delete from INGREDIENTS where name = '" + ingredient + "'";
+            System.out.println("sqlDeleteFrom ingredients for = " + sqlDeleteStmt);
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.execute(sqlDeleteStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addNewIngredientButton;

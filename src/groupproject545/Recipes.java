@@ -100,7 +100,7 @@ public class Recipes {
         try {
             String sqlStatement = "select * from ingredients where name <> all(select ingredientName from CALLSFOR where recipeTitle = '"
                     + recipeTitle + "') order by name";
-            System.out.println("Sql: " + sqlStatement);
+
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {

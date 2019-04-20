@@ -77,15 +77,25 @@ public class RecipesGUI extends javax.swing.JPanel {
         instructionsTextArea.setEditable(mode);
         recipeCategoryTextField.setEditable(mode);
         recipeTitleTextField.setEditable(mode);
-        if (ingredientsComboBox.getItemCount() != 0) {  // allow user to remove ingredients from the list, if there are ingredients to be deleted
-            removeIngredientButton.setVisible(true);
-        }
+
         if (mode) {  // Fetch all ingredients not currently being used in the recipe, place them in the combo box.
+            if (ingredientsComboBox.getItemCount() != 0) {  // allow user to remove ingredients from the list, if there are ingredients to be deleted
+                removeIngredientButton.setVisible(true);
+            }
+
             String recipeTitle = recipeTitleTextField.getText();
             List<String> unusedIngredients = recipesClass.getIngredientsNotUsedInRecipe(recipeTitle);
             unusedIngredientComboBox.removeAllItems();
-            for (int i = 0; i < unusedIngredients.size(); i++) {
-                unusedIngredientComboBox.addItem(unusedIngredients.get(i));
+            if (unusedIngredients.size() > 0) {
+                // Unhide relevant GUIs.
+                unusedIngredientComboBox.setVisible(true);
+                newIngredientLabel.setVisible(true);
+                addNewIngredientButton.setVisible(true);
+
+                // Loop over all the unused ingredients, placing them into the combo box.
+                for (int i = 0; i < unusedIngredients.size(); i++) {
+                    unusedIngredientComboBox.addItem(unusedIngredients.get(i));
+                }
             }
         }
     }
@@ -186,6 +196,11 @@ public class RecipesGUI extends javax.swing.JPanel {
         });
 
         unusedIngredientComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        unusedIngredientComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unusedIngredientComboBoxActionPerformed(evt);
+            }
+        });
 
         newIngredientLabel.setText("New Ingredient:");
 
@@ -307,10 +322,21 @@ public class RecipesGUI extends javax.swing.JPanel {
         for (int i = 0; i < ingredients.size(); i++) {
             ingredientsComboBox.addItem(ingredients.get(i));
         }
+        if (ingredients.size() == 0) {  // Hide the combo box and label (may already be hidden).
+            ingredientsComboBox.setVisible(false);
+            ingredientsLabel.setVisible(false);
+        } else {
+            ingredientsComboBox.setVisible(true);
+            ingredientsLabel.setVisible(true);
+        }
     }//GEN-LAST:event_recipesComboBoxActionPerformed
 
     private boolean recipeIsNotEmpty(String recipeTitle) {
         if (recipeTitle == null || recipeTitle.equals("")) {
+            JOptionPane.showMessageDialog(this,
+                    "The recipe title is empty.",
+                    "Recipe Not Added",
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
@@ -336,9 +362,11 @@ public class RecipesGUI extends javax.swing.JPanel {
     }
 
     private void addNewRecipeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewRecipeButtonActionPerformed
-        recipeTitleTextField.setText("");  // Set to empty before doing anything else (makes changeEditingMode operations easier)
+
         if (addNewRecipeButton.getText().equals("Add New Recipe")) {  // User wants to add a new ingredient. Hide some elements.
 
+            recipeTitleTextField.setText("");  // Set to empty before doing anything else (makes changeEditingMode operations easier)
+            ingredientsComboBox.removeAllItems(); // Remove anything already in the ingredients (there should not be any ingredients for a new recipe)
             addNewRecipeButton.setText("Submit New Recipe");
 
             // null out text in nutrition facts field and food group field.
@@ -353,33 +381,21 @@ public class RecipesGUI extends javax.swing.JPanel {
             editRecipeButton.setVisible(false);
             recipesComboBox.setVisible(false);
             changeEditingMode(true);
-        } else // Do opposite of if condition. Try to add ingredient to screen and database.
+        } else // Do opposite of if condition. Try to add recipe to screen and database.
         {
             if (recipeIsNotEmpty(recipeTitleTextField.getText()) && recipeDoesNotAlreadyExist(false, recipeTitleTextField.getText())) {  // Before submitting changes to the database, validate the recipe (make sure it's title is not null and that there is not already an recipe with that name).            
-
                 String title = recipeTitleTextField.getText();
                 String instructions = instructionsTextArea.getText();
                 String category = recipeCategoryTextField.getText();
                 Recipes recipe = new Recipes(title, instructions, category);
 
-                // Insert the item into the database.
-                try {
-                    String sqlInsertStmt = "insert into RECIPES values ('" + title + "', '" + instructions + "', '" + category + "')";
+                // Must insert into RECIPES before we can insert into CALLSFOR.
+                insertIntoRecipes(title, instructions, category);
 
-                    conn = ConnectDb.setupConnection();
-                    stmt = conn.createStatement();
-                    stmt.executeUpdate(sqlInsertStmt);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-                } finally {
-                    try {  // Try closing the connection and the statement.
-                        conn.close();
-                        stmt.close();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
-                    }
-                }
-
+                // Insert into the CALLSFOR table all the ingredients used in the new recipe.
+                insertIntoCallsFor(title);
+                System.out.println("done inserting, updating and deleting.");
+                
                 // Place new item in the list and combo box.
                 recipes.add(0, recipe);
                 recipesComboBox.insertItemAt(title, 0);
@@ -388,7 +404,9 @@ public class RecipesGUI extends javax.swing.JPanel {
                 // Select the new item.
                 recipesComboBox.setSelectedIndex(0);
 
+                editRecipeButton.setVisible(true);
                 addNewRecipeButton.setText("Add New Recipe");
+                removeIngredientButton.setVisible(false);
                 changeEditingMode(false);
             }
         }
@@ -399,10 +417,35 @@ public class RecipesGUI extends javax.swing.JPanel {
         // to delete a recipe or when a user wishes to cancel out of edit mode.
         if (deleteRecipeButton.getText().equals("Delete Recipe")) {
             // Remove the recipe from the screen and the database.
+            String title = recipesComboBox.getSelectedItem().toString();
+            try {
+                // First, delete from CALLSFOR.
+                String sqlDeleteStmt = "delete from CALLSFOR where recipeTitle = '" + title + "'";
 
+                conn = ConnectDb.setupConnection();
+                stmt = conn.createStatement();
+                stmt.executeUpdate(sqlDeleteStmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    conn.close();
+                    stmt.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
+            }
+            deleteOldRecipe(title);
+
+            recipesComboBox.removeItemAt(recipesComboBox.getSelectedIndex());
+            if (recipesComboBox.getItemCount() == 0) {  // NOthing to delete/edit.
+                deleteRecipeButton.setVisible(false);
+                editRecipeButton.setVisible(false);
+            }
         } else {
+
             removeIngredientButton.setVisible(false);
-            
+
             // Cancel out of edit mode. Select first recipe so the fields will populate with its data.
             changeEditingMode(false);  // Get out of edit mode.
             recipesComboBox.setVisible(true);
@@ -436,11 +479,169 @@ public class RecipesGUI extends javax.swing.JPanel {
 
             addNewRecipeButton.setVisible(false);
         } else if (recipeIsNotEmpty(recipeTitleTextField.getText()) && recipeDoesNotAlreadyExist(true, recipeTitleTextField.getText())) {  // Make sure the recipe does not already exist in the database.
+            String title = recipeTitleTextField.getText();
+            String instructions = instructionsTextArea.getText();
+            String category = recipeCategoryTextField.getText();
+            Recipes recipe = new Recipes(title, instructions, category);
+            String oldTitle = recipesComboBox.getSelectedItem().toString();
+
+            // Insert into the CALLSFOR table all the ingredients used in the new recipe.
+            if (oldTitle.equals(title)) {  // Recipe name not changed. Only need to delete all the ingredients in the combo box and update the contents of the recipe (excluding the title).
+                deleteIngredientsFromCallsFor(title);  // Remove all ingredients used in this recipe (will later add ingredients that are in the combo box).
+                updateRecipe(title, instructions, category);
+            } else {
+                insertIntoRecipes(title, instructions, category);
+                deleteIngredientsFromCallsFor(oldTitle);
+                updateServedDuringMealToNewRecipeTitle(title, oldTitle);
+                deleteOldRecipe(oldTitle);
+            }
+            insertIntoCallsFor(title);     // Place the recipes and ingredients back in.
+                
+            // Remove the old version of the recipe from the screen.
+            int pickedItem = recipesComboBox.getSelectedIndex();
+
+            recipes.remove(pickedItem);
+            recipesComboBox.removeItemAt(pickedItem);
+
+            // Place new item in the list and combo box.
+            recipes.add(0, recipe);
+            recipesComboBox.insertItemAt(title, 0);
+
+            recipesComboBox.setVisible(true);
+            // Select the new item.
+            recipesComboBox.setSelectedIndex(0);
+
+            editRecipeButton.setVisible(true);
+            editRecipeButton.setText("Edit Recipe");
+            removeIngredientButton.setVisible(false);
+            addNewRecipeButton.setVisible(true);
+            changeEditingMode(false);
 
         }
     }//GEN-LAST:event_editRecipeButtonActionPerformed
 
+    private void updateRecipe(String title, String instructions, String category) {
+        // Update the RECIPES table to include the new recipe info (excluding title).
+        try {
+            String sqlUpdateStmt = "update RECIPES set instructions = '" + instructions + "', category = '" + category + "' where title = '" + title + "'";
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.execute(sqlUpdateStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void updateServedDuringMealToNewRecipeTitle(String newTitle, String oldTitle) {
+        // Update the SERVEDDURINGMEAL table to include the new recipe title.
+        try {
+            String sqlUpdateStmt = "update SERVEDDURINGMEAL set recipeTitle = '" + newTitle + "' where recipeTitle = '" + oldTitle + "'";
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlUpdateStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void insertIntoRecipes(String title, String instructions, String category) {
+        // Insert the item into the database.
+        try {
+            String sqlInsertStmt = "insert into RECIPES values ('" + title + "', '" + instructions + "', '" + category + "')";
+
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlInsertStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void insertIntoCallsFor(String title) {
+        // Insert into the CALLSFOR table the ingredients used in the recipe.
+        for (int i = 0; i < ingredientsComboBox.getItemCount(); i++) {
+            try {
+                String sqlInsertStmt = "insert into CALLSFOR values ('" + ingredientsComboBox.getItemAt(i) + "', '" + title + "')";
+                conn = ConnectDb.setupConnection();
+                stmt = conn.createStatement();
+                stmt.executeUpdate(sqlInsertStmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    conn.close();
+                    stmt.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
+            }
+        }
+    }
+
+    private void deleteOldRecipe(String oldTitle) {
+        for (int i = 0; i < ingredientsComboBox.getItemCount(); i++) {
+            try {
+                String sqlInsertStmt = "delete from RECIPES where title = '" + oldTitle + "'";
+                conn = ConnectDb.setupConnection();
+                stmt = conn.createStatement();
+                stmt.executeUpdate(sqlInsertStmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    conn.close();
+                    stmt.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
+            }
+        }
+    }
+
+    private void deleteIngredientsFromCallsFor(String title) {
+        // Will need to delete from CALLSFOR all recipes with the title that have the specified ingredients that have to be removed.
+        for (int i = 0; i < ingredientsComboBox.getItemCount(); i++) {
+            try {
+                String sqlInsertStmt = "delete from CALLSFOR where recipeTitle = '" + title + "'";
+                conn = ConnectDb.setupConnection();
+                stmt = conn.createStatement();
+                stmt.executeUpdate(sqlInsertStmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    conn.close();
+                    stmt.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
+            }
+        }
+    }
+
     private void addNewIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewIngredientButtonActionPerformed
+
         if (!ingredientsComboBox.isVisible()) {  // Time to unhide this combo box (something is about to be added to it)
             ingredientsComboBox.setVisible(true);
             ingredientsLabel.setVisible(true);
@@ -461,6 +662,7 @@ public class RecipesGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_ingredientsComboBoxActionPerformed
 
     private void removeIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeIngredientButtonActionPerformed
+
         if (!unusedIngredientComboBox.isVisible()) {  // Time to unhide this combo box (something is about to be added to it)
             unusedIngredientComboBox.setVisible(true);
             newIngredientLabel.setVisible(true);
@@ -475,6 +677,10 @@ public class RecipesGUI extends javax.swing.JPanel {
             ingredientsLabel.setVisible(false);
         }
     }//GEN-LAST:event_removeIngredientButtonActionPerformed
+
+    private void unusedIngredientComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unusedIngredientComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_unusedIngredientComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

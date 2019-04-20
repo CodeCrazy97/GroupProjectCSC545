@@ -7,6 +7,11 @@ Group 3:
 Evan Wright, Chris Ward, Corey Robinson, Ethan Vaughan
 */
 
+drop trigger ingredients_update_t2;
+drop trigger recipes_update_t1;
+drop trigger recipes_update_t2;
+drop trigger meals_update_t1;
+
 drop table INGREDIENTS cascade constraints;
 drop table RECIPES cascade constraints;
 drop table CALLSFOR cascade constraints;
@@ -48,6 +53,7 @@ constraint fk_servedDuringMeal_recipetitle foreign key (recipeTitle) references 
 constraint fk_servedDuringMeal_mealname foreign key (mealName) references meals(name) on delete cascade
 );
 
+
 create table mealPlan (
 title varchar(100) primary key,
 nextOccurrence date default to_date('1900-01-01', 'YYYY-MM-DD')   -- Date when the meal plan is scheduled to occur next (default date is in the past, so it is not scheduled to occur unless the user says so)
@@ -62,6 +68,62 @@ primary key (dayOfWeek, mealTitle, mealName, mealPlanTitle),
 constraint fk_mealDay_mealname foreign key (mealName) references meals(name) on delete cascade,
 constraint fk_mealDay_mealplantitle foreign key (mealPlanTitle) references mealPlan(title) on delete cascade
 );
+
+-- ++++++++++++++++++++++++++++++++++++++++++++
+-- Below are the triggers. ++++++++++++++++++++
+-- ++++++++++++++++++++++++++++++++++++++++++++
+
+
+-- trigger to update CALLSFOR when ingredient name is changed.
+create or replace trigger ingredients_update_t2
+after update on ingredients					-- event
+referencing 
+new as newrow
+old as oldrow
+for each row
+begin									-- action
+	update callsFor set ingredientName = :newrow.name where ingredientName = :oldrow.name;	
+end;
+/
+
+-- trigger to update CALLSFOR when recipes title is changed.
+create or replace trigger recipes_update_t1
+after update on recipes					-- event
+referencing 
+new as newrow
+old as oldrow
+for each row
+begin									-- action
+	update callsFor set recipeTitle = :newrow.title where recipeTitle = :oldrow.title;	
+end;
+/
+
+
+-- trigger to update SERVEDDURINGMEAL when recipe title is changed.
+create or replace trigger recipes_update_t2
+after update on recipes					-- event
+referencing 
+new as newrow
+old as oldrow
+for each row
+begin									-- action
+	update servedDuringMeal set recipeTitle = :newrow.title where recipeTitle = :oldrow.title;	
+end;
+/
+
+-- trigger to update SERVEDDURINGMEAL when meal name is changed.
+create or replace trigger meals_update_t1
+after update on meals					-- event
+referencing 
+new as newrow
+old as oldrow
+for each row
+begin									-- action
+	update servedDuringMeal set mealName = :newrow.name where mealName = :oldrow.name;	
+end;
+/
+
+
 
 insert into ingredients values('broccoli','vegetables','Y','high in fiber, very high in vitamin C and has potassium, B6 and vitamin A'); 
 insert into ingredients values('tuna','fish','N','calories per 8oz: 116 calories');
@@ -94,12 +156,8 @@ insert into ingredients values('cocoa powder','seasoning','N','Calories per 8 oz
 insert into ingredients values('colby cheese','dairy','N','Calories per 8oz: 122');
 insert into ingredients values('pepperjack cheese','dairy','Y','Calories per 8oz: 85');                           
 insert into ingredients values('lemon pepper seasoing','seasoning','Y','Calories per 8oz: 18');
-                           
-insert into recipes values('recipe1','instruction1','category1'); 
 
-insert into callsFor values ('pineapple', 'recipe1');
-insert into callsFor values ('2% milk', 'recipe1');
-
+insert into recipes values('recipe1','mix ingredients','category2');
 insert into recipes values('recipe2','instruction2','category2');
 insert into recipes values('recipe3','instruction3','category3');                           
 insert into recipes values('recipe4','instruction4','category4');                           
@@ -111,5 +169,10 @@ insert into recipes values('recipe9','instruction9','category9');
 insert into recipes values('recipe10','instruction10','category10');
 insert into recipes values('recipe11','instruction11','category11');
 insert into recipes values('recipe12','instruction12','category12');
+
+
+insert into callsFor values ('asparagus', 'recipe1');
+insert into callsFor values ('2% milk', 'recipe1');
+
 
 commit;

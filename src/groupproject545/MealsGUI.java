@@ -68,19 +68,19 @@ public class MealsGUI extends javax.swing.JPanel {
         if (myMeals.size() > 0) {
             putMealsInComboBox();
         } else {  // Hide almost everything.
-            addRecipeButton.setVisible(false);
-            unusedRecipesLabel.setVisible(false);
-            unusedRecipesComboBox.setVisible(false);
             deleteMealButton.setVisible(false);
             mealsComboBox.setVisible(false);
             myMealsLabel.setVisible(false);
-            removeRecipeButton.setVisible(false);
             usedRecipesLabel.setVisible(false);
             usedRecipesComboBox.setVisible(false);
             editMealButton.setVisible(false);
-            mealNameTextField.setVisible(false);
-            mealNameLabel.setVisible(false);
         }
+        addRecipeButton.setVisible(false);
+        removeRecipeButton.setVisible(false);
+        mealNameTextField.setVisible(false);
+        mealNameLabel.setVisible(false);
+        unusedRecipesLabel.setVisible(false);
+        unusedRecipesComboBox.setVisible(false);
     }
 
     // Gets all meals in the database.
@@ -92,6 +92,7 @@ public class MealsGUI extends javax.swing.JPanel {
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
+            myMeals.clear();   // Clear meals from any previous use.
             while (rs.next()) {
                 String mealName = rs.getString(1);
                 myMeals.add(mealName);
@@ -119,6 +120,7 @@ public class MealsGUI extends javax.swing.JPanel {
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
                 String recipeTitle = rs.getString(1);
+                System.out.println("new used recipe for " + meal + " : " + recipeTitle);
                 usedRecipes.add(recipeTitle);
             }
 
@@ -160,23 +162,62 @@ public class MealsGUI extends javax.swing.JPanel {
     }
 
     private void putMealsInComboBox() {
-        mealsComboBox.removeAllItems();
-        for (int i = 0; i < myMeals.size(); i++) {
-            mealsComboBox.addItem(myMeals.get(i));
+        if (myMeals.size() > 0) {
+            deleteMealButton.setVisible(true);
+            mealsComboBox.setVisible(true);
+            myMealsLabel.setVisible(true);
+            usedRecipesLabel.setVisible(true);
+            usedRecipesComboBox.setVisible(true);
+            editMealButton.setVisible(true);
+
+            System.out.println("about to remove all items from the meals cbox");
+            mealsComboBox.removeAllItems();
+            for (int i = 0; i < myMeals.size(); i++) {
+                mealsComboBox.addItem(myMeals.get(i));
+            }
+        } else {
+            deleteMealButton.setVisible(false);
+            mealsComboBox.setVisible(false);
+            myMealsLabel.setVisible(false);
+            usedRecipesLabel.setVisible(false);
+            usedRecipesComboBox.setVisible(false);
+            editMealButton.setVisible(false);
         }
     }
 
     private void putUnUsedRecipesInComboBox() {
-        unusedRecipesComboBox.removeAllItems();
-        for (int i = 0; i < unUsedRecipes.size(); i++) {
-            unusedRecipesComboBox.addItem(unUsedRecipes.get(i));
+        if (unUsedRecipes.size() > 0) {
+            unusedRecipesComboBox.setVisible(true);
+            unusedRecipesLabel.setVisible(true);
+            addRecipeButton.setVisible(true);
+
+            unusedRecipesComboBox.removeAllItems();
+            for (int i = 0; i < unUsedRecipes.size(); i++) {
+                unusedRecipesComboBox.addItem(unUsedRecipes.get(i));
+            }
+        } else {
+            unusedRecipesComboBox.setVisible(false);
+            unusedRecipesLabel.setVisible(false);
+            addRecipeButton.setVisible(false);
         }
     }
 
     private void putUsedRecipesInComboBox() {
-        usedRecipesComboBox.removeAllItems();
-        for (int i = 0; i < usedRecipes.size(); i++) {
-            usedRecipesComboBox.addItem(usedRecipes.get(i));
+        if (usedRecipes.size() > 0) {
+            usedRecipesComboBox.setVisible(true);
+            usedRecipesLabel.setVisible(true);
+            if (editMealButton.getText().equals("Submit Changes")) {  // in edit mode  
+                addRecipeButton.setVisible(true);
+            }
+
+            usedRecipesComboBox.removeAllItems();
+            for (int i = 0; i < usedRecipes.size(); i++) {
+                usedRecipesComboBox.addItem(usedRecipes.get(i));
+            }
+        } else {
+            usedRecipesComboBox.setVisible(false);
+            usedRecipesLabel.setVisible(false);
+            addRecipeButton.setVisible(false);
         }
     }
 
@@ -211,6 +252,11 @@ public class MealsGUI extends javax.swing.JPanel {
         });
 
         editMealButton.setText("Edit Meal");
+        editMealButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editMealButtonActionPerformed(evt);
+            }
+        });
 
         deleteMealButton.setText("Delete Meal");
         deleteMealButton.addActionListener(new java.awt.event.ActionListener() {
@@ -219,11 +265,22 @@ public class MealsGUI extends javax.swing.JPanel {
             }
         });
 
+        unusedRecipesComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unusedRecipesComboBoxActionPerformed(evt);
+            }
+        });
+
         usedRecipesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " " }));
+        usedRecipesComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                usedRecipesComboBoxActionPerformed(evt);
+            }
+        });
 
         unusedRecipesLabel.setText("Available recipes:");
 
-        usedRecipesLabel.setText("Current recipes used in this meal:");
+        usedRecipesLabel.setText("Recipes used in this meal:");
 
         mealNameLabel.setText("Meal Name:");
 
@@ -263,7 +320,17 @@ public class MealsGUI extends javax.swing.JPanel {
                         .addGap(34, 34, 34)
                         .addComponent(deleteMealButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
+                        .addGap(67, 67, 67)
+                        .addComponent(mealNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(mealNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 328, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(196, 196, 196)
+                        .addComponent(myMealsLabel)
+                        .addGap(18, 18, 18)
+                        .addComponent(mealsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(56, 56, 56)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(unusedRecipesLabel)
                             .addComponent(usedRecipesLabel))
@@ -274,17 +341,7 @@ public class MealsGUI extends javax.swing.JPanel {
                         .addGap(31, 31, 31)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(removeRecipeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(addRecipeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(67, 67, 67)
-                        .addComponent(mealNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mealNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 328, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(196, 196, 196)
-                        .addComponent(myMealsLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(mealsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(addRecipeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(45, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -320,16 +377,12 @@ public class MealsGUI extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void mealsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealsComboBoxActionPerformed
-        if (myMeals.size() > 0) { // If there are any meals...
+        if (mealsComboBox.getItemCount() > 0 && myMeals.size() > 0) { // If there are any meals and they are in the combo box...
             // A new meal has been selected. Place all used recipes into the combo box.
             usedRecipes.clear(); //Remove any recipes present from a previous meal.
+            // Fetch the recipes used for this meal and place them in the combobox.                        
             getUsedRecipes(mealsComboBox.getSelectedItem().toString());
-            if (usedRecipes.size() > 0) {
-                usedRecipesComboBox.setVisible(true);
-            }
-            for (int i = 0; i < usedRecipes.size(); i++) {
-                usedRecipesComboBox.addItem(usedRecipes.get(i));
-            }
+            putUsedRecipesInComboBox();
         }
     }//GEN-LAST:event_mealsComboBoxActionPerformed
 
@@ -367,6 +420,8 @@ public class MealsGUI extends javax.swing.JPanel {
     private void addMealButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealButtonActionPerformed
         System.out.println("used recipes size = " + usedRecipes.size());
         if (addMealButton.getText().equals("Add a Meal")) {
+            usedRecipesComboBox.removeAllItems();
+            mealNameTextField.setText("");
             addMealButton.setText("Submit New Meal");
             deleteMealButton.setText("Cancel");
 
@@ -387,19 +442,31 @@ public class MealsGUI extends javax.swing.JPanel {
             unusedRecipesComboBox.setVisible(true);
 
             getUnusedRecipes("");  // Get all recipes for this (null) meal - should place all recipes into the combo box.
-            if (unUsedRecipes.size() > 0) {
-                unusedRecipesComboBox.setVisible(true);
-                unusedRecipesLabel.setVisible(true);
-                addRecipeButton.setVisible(true);
-                System.out.println("removing from the unused combo box");
-                putUnUsedRecipesInComboBox();
-            }
+            putUnUsedRecipesInComboBox();
 
         } else {
-            String mealName = mealNameTextField.getText();
+            String mealName = mealNameTextField.getText().toString();
             if (mealDoesNotAlreadyExist(false, mealName) && mealIsNotEmpty(mealName)) {  // Verify input.
                 insertIntoMeals(mealName);
-                // Now, insert into the SERVEDDURINGMEAL table.
+                insertIntoServedDuringMeal(mealName);
+                // Place in the combo box of meals.
+                mealsComboBox.addItem(mealName);
+                mealsComboBox.setSelectedItem(mealName);
+
+                // Change GUI components.
+                addMealButton.setText("Add a Meal");
+                deleteMealButton.setText("Delete Meal");
+                editMealButton.setText("Edit Meal");
+
+                addRecipeButton.setVisible(false);
+                removeRecipeButton.setVisible(false);
+                unusedRecipesComboBox.setVisible(false);
+                unusedRecipesLabel.setVisible(false);
+                mealNameLabel.setVisible(false);
+                mealNameTextField.setVisible(false);
+                editMealButton.setVisible(true);
+                myMealsLabel.setVisible(true);
+                mealsComboBox.setVisible(true);
 
             }
         }
@@ -408,20 +475,16 @@ public class MealsGUI extends javax.swing.JPanel {
 
     private void addRecipeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRecipeButtonActionPerformed
         String recipe = unusedRecipesComboBox.getSelectedItem().toString();
-        System.out.println("recipe = " + recipe);
-        System.out.println("used recipes size :: " + usedRecipes.size());
-        System.out.println("number of used recipes : " + usedRecipesComboBox.getItemCount());
         if (newUnUsedRecipes.contains(recipe)) {
             newUnUsedRecipes.remove(recipe);
         } else {
-            newUnUsedRecipes.add(recipe);
+            newUsedRecipes.add(recipe);
         }
-
-        if (usedRecipesComboBox.getItemAt(0) == " ") {  // For some reason, Java will put one blank item in a combo box if nothing else is there. So, I'm removing that item.
+        if (usedRecipesComboBox.getItemCount() > 0 && usedRecipesComboBox.getItemAt(0).equals(" ")) {  // For some reason, Java will put one blank item in a combo box if nothing else is there. So, I'm removing that item.
             usedRecipesComboBox.removeItemAt(0);
         }
         usedRecipesComboBox.addItem(recipe);
-
+        usedRecipesComboBox.setSelectedItem(recipe);  // select this recipe so the user can see recipes being added
         unusedRecipesComboBox.removeItemAt(unusedRecipesComboBox.getSelectedIndex());
 
         // Check if GUIs need hidden/unhidden.
@@ -442,9 +505,10 @@ public class MealsGUI extends javax.swing.JPanel {
         if (newUsedRecipes.contains(recipe)) {
             newUsedRecipes.remove(recipe);
         } else {
-            newUsedRecipes.add(recipe);
+            newUnUsedRecipes.add(recipe);
         }
         unusedRecipesComboBox.addItem(recipe);
+        unusedRecipesComboBox.setSelectedItem(recipe);  //select this recipe so the user can see things changing on the screen
         usedRecipesComboBox.removeItemAt(usedRecipesComboBox.getSelectedIndex());
 
         // Check if GUIs need hidden/unhidden.
@@ -464,7 +528,7 @@ public class MealsGUI extends javax.swing.JPanel {
         if (deleteMealButton.getText().equals("Cancel")) {
             deleteMealButton.setText("Delete Meal");
             addMealButton.setText("Add a Meal");
-            editMealButton.setVisible(true);
+            addMealButton.setVisible(true);
             editMealButton.setText("Edit Meal");
             addRecipeButton.setVisible(false);
             removeRecipeButton.setVisible(false);
@@ -472,22 +536,156 @@ public class MealsGUI extends javax.swing.JPanel {
             unusedRecipesLabel.setVisible(false);
             mealNameLabel.setVisible(false);
             mealNameTextField.setVisible(false);
+
+            // Want to remove any recipes from the used recipes combo box, as they may have been added during editing but were not submitted to the database
+            if (mealsComboBox.getItemCount() > 0) { // there are meals to be selectd from
+                getUsedRecipes(mealsComboBox.getSelectedItem().toString());
+                putUsedRecipesInComboBox();
+            }
+
             if (myMeals.size() > 0) {
+                editMealButton.setVisible(true);
                 myMealsLabel.setVisible(true);
                 mealsComboBox.setVisible(true);
+            } else {  //No meals.
+                deleteMealButton.setVisible(false);
+                editMealButton.setVisible(false);
+                myMealsLabel.setVisible(false);
+                mealsComboBox.setVisible(false);
             }
+        } else {
+            // Delete from database.
+            String mealName = mealsComboBox.getSelectedItem().toString();
+            deleteMeal(mealName);  // removes the meal from the database
+            getMeals();
+            putMealsInComboBox();
         }
-
     }//GEN-LAST:event_deleteMealButtonActionPerformed
 
-    private void insertIntoServedDuringMeal(String mealName) {
-        for (int i = 0; i < usedRecipes.size(); i++) {
-            try {
-                String sqlInsertStmt = "insert into SERVEDDURINGMEAL values ('" + usedRecipes.get(i) + "', '" + mealName + "')";
+    private void unusedRecipesComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unusedRecipesComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_unusedRecipesComboBoxActionPerformed
 
+    private void usedRecipesComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usedRecipesComboBoxActionPerformed
+
+    }//GEN-LAST:event_usedRecipesComboBoxActionPerformed
+
+    private void editMealButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMealButtonActionPerformed
+        if (editMealButton.getText().equals("Edit Meal")) {
+            editMealButton.setText("Submit Changes");
+            deleteMealButton.setText("Cancel");
+
+            String mealName = mealsComboBox.getSelectedItem().toString();
+            mealsComboBox.setVisible(false);
+            myMealsLabel.setVisible(false);
+            addMealButton.setVisible(false);
+            mealNameLabel.setVisible(true);
+            mealNameTextField.setVisible(true);
+            mealNameTextField.setText(mealName);
+            removeRecipeButton.setVisible(true);
+
+            //Fill used/unused recipe combo boxes for this meal.
+            getUnusedRecipes(mealName);
+            putUnUsedRecipesInComboBox();
+            getUsedRecipes(mealName);
+            putUsedRecipesInComboBox();
+
+        } else { // Add to db and change screen GUI accordingly
+            String oldMealName = mealsComboBox.getSelectedItem().toString();
+            String newMealName = mealNameTextField.getText();
+            updateMeal(oldMealName, newMealName);
+
+            // Remove the meal's old name from the combo box.
+            mealsComboBox.removeItem(oldMealName);
+
+            // Place the new name into the combobox.
+            mealsComboBox.addItem(newMealName);
+
+            // Update the recipes served during the meal for this meal.
+            insertIntoServedDuringMeal(newMealName);
+
+            // Delete any recipes that are no longer served during this meal.
+            deleteFromServedDuringMeal(newMealName);
+
+            editMealButton.setText("Edit Meal");
+            deleteMealButton.setText("Delete Meal");
+
+            mealsComboBox.setVisible(true);
+            myMealsLabel.setVisible(true);
+            addMealButton.setVisible(true);
+            mealNameLabel.setVisible(false);
+            mealNameTextField.setVisible(false);
+            unusedRecipesComboBox.setVisible(false);
+            unusedRecipesLabel.setVisible(false);
+            addRecipeButton.setVisible(false);
+            removeRecipeButton.setVisible(false);
+        }
+    }//GEN-LAST:event_editMealButtonActionPerformed
+
+    private void updateMeal(String oldName, String newName) {
+        try {
+            String sqlUpdateStmt = "update MEALS set name = '" + newName + "' where name = '" + oldName + "'";
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlUpdateStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                ConnectDb.close(conn);
+                ConnectDb.close(stmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void insertIntoServedDuringMeal(String mealName) {
+        for (int i = 0; i < newUsedRecipes.size(); i++) {
+            try {
+                String sqlInsertStmt = "insert into SERVEDDURINGMEAL values ('" + newUsedRecipes.get(i) + "', '" + mealName + "')";
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
                 stmt.executeUpdate(sqlInsertStmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    ConnectDb.close(conn);
+                    ConnectDb.close(stmt);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
+            }
+        }
+    }
+
+    private void deleteMeal(String newName) {
+        try {
+            String sqlDeleteStmt = "delete from MEALS where name = '" + newName + "'";
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlDeleteStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                ConnectDb.close(conn);
+                ConnectDb.close(stmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void deleteFromServedDuringMeal(String mealName) {
+        for (int i = 0; i < newUnUsedRecipes.size(); i++) {
+            try {
+                String sqlDeleteStmt = "delete from SERVEDDURINGMEAL where recipeTitle = '" + newUnUsedRecipes.get(i) + "'";
+
+                conn = ConnectDb.setupConnection();
+                stmt = conn.createStatement();
+                stmt.executeUpdate(sqlDeleteStmt);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, e);  // Show the exception message.
             } finally {

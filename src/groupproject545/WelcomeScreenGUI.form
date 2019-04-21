@@ -67,6 +67,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Meals"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mealsButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="mealPlansButton">
       <Properties>

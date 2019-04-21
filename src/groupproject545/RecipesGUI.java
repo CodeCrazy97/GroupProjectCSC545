@@ -5,6 +5,7 @@
  */
 package groupproject545;
 
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -23,6 +24,11 @@ public class RecipesGUI extends javax.swing.JPanel {
 
     Connection conn = null;
     Statement stmt = null;
+
+    // Will use the below two data structures to keep up with what ingredients need 
+    // inserting/removing from the CALLSFOR table.
+    public List<String> ingredientsForDeleteFromCallsFor = new ArrayList<String>();
+    public List<String> ingredientsForInsertIntoCallsFor = new ArrayList<String>();
 
     public List<Recipes> recipes = new ArrayList<Recipes>();
     public Recipes recipesClass = new Recipes();
@@ -364,6 +370,9 @@ public class RecipesGUI extends javax.swing.JPanel {
     private void addNewRecipeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewRecipeButtonActionPerformed
 
         if (addNewRecipeButton.getText().equals("Add New Recipe")) {  // User wants to add a new ingredient. Hide some elements.
+            // Clean up anything that had been done as far as remvoing/adding ingredients.
+            ingredientsForDeleteFromCallsFor.clear();
+            ingredientsForInsertIntoCallsFor.clear();
 
             recipeTitleTextField.setText("");  // Set to empty before doing anything else (makes changeEditingMode operations easier)
             ingredientsComboBox.removeAllItems(); // Remove anything already in the ingredients (there should not be any ingredients for a new recipe)
@@ -394,8 +403,7 @@ public class RecipesGUI extends javax.swing.JPanel {
 
                 // Insert into the CALLSFOR table all the ingredients used in the new recipe.
                 insertIntoCallsFor(title);
-                System.out.println("done inserting, updating and deleting.");
-                
+
                 // Place new item in the list and combo box.
                 recipes.add(0, recipe);
                 recipesComboBox.insertItemAt(title, 0);
@@ -420,7 +428,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             String title = recipesComboBox.getSelectedItem().toString();
             try {
                 // First, delete from CALLSFOR.
-                String sqlDeleteStmt = "delete from CALLSFOR where recipeTitle = '" + title + "'";
+                String sqlDeleteStmt = "delete from RECIPES where title = '" + title + "'";
 
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
@@ -435,7 +443,6 @@ public class RecipesGUI extends javax.swing.JPanel {
                     JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
                 }
             }
-            deleteOldRecipe(title);
 
             recipesComboBox.removeItemAt(recipesComboBox.getSelectedIndex());
             if (recipesComboBox.getItemCount() == 0) {  // NOthing to delete/edit.
@@ -465,6 +472,9 @@ public class RecipesGUI extends javax.swing.JPanel {
     private void editRecipeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editRecipeButtonActionPerformed
 
         if (editRecipeButton.getText().equals("Edit Recipe")) {
+            // Clean up anything that had been done as far as remvoing/adding ingredients.
+            ingredientsForDeleteFromCallsFor.clear();
+            ingredientsForInsertIntoCallsFor.clear();
 
             int pickedRecipe = recipesComboBox.getSelectedIndex();
             recipeTitleTextField.setText(recipes.get(pickedRecipe).getTitle());  // Place the title in the text field before calling changeEditMode
@@ -485,18 +495,19 @@ public class RecipesGUI extends javax.swing.JPanel {
             Recipes recipe = new Recipes(title, instructions, category);
             String oldTitle = recipesComboBox.getSelectedItem().toString();
 
-            // Insert into the CALLSFOR table all the ingredients used in the new recipe.
+            // Must work with CALLSFOR first, as it is a child database.
+            // If there is something to insert or delete from the CALLSFOR table
+            // (if the user removed/added ingredients used in the recipe), then
+            // proceed accordingly...
+            insertIntoCallsFor(oldTitle);     // Place the recipes and ingredients back in.
+            deleteFromCallsFor(oldTitle);      // Remove the entry(ies) in the CALLSFOR table, if there are any. 
+
             if (oldTitle.equals(title)) {  // Recipe name not changed. Only need to delete all the ingredients in the combo box and update the contents of the recipe (excluding the title).
-                deleteIngredientsFromCallsFor(title);  // Remove all ingredients used in this recipe (will later add ingredients that are in the combo box).
-                updateRecipe(title, instructions, category);
+                updateRecipesNoTitleChange(title, instructions, category);
             } else {
-                insertIntoRecipes(title, instructions, category);
-                deleteIngredientsFromCallsFor(oldTitle);
-                updateServedDuringMealToNewRecipeTitle(title, oldTitle);
-                deleteOldRecipe(oldTitle);
+                updateRecipesTitleChange(oldTitle, title, instructions, category);
             }
-            insertIntoCallsFor(title);     // Place the recipes and ingredients back in.
-                
+
             // Remove the old version of the recipe from the screen.
             int pickedItem = recipesComboBox.getSelectedIndex();
 
@@ -520,29 +531,35 @@ public class RecipesGUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_editRecipeButtonActionPerformed
 
-    private void updateRecipe(String title, String instructions, String category) {
-        // Update the RECIPES table to include the new recipe info (excluding title).
-        try {
-            String sqlUpdateStmt = "update RECIPES set instructions = '" + instructions + "', category = '" + category + "' where title = '" + title + "'";
-            conn = ConnectDb.setupConnection();
-            stmt = conn.createStatement();
-            stmt.execute(sqlUpdateStmt);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-        } finally {
-            try {  // Try closing the connection and the statement.
-                conn.close();
-                stmt.close();
+    private void deleteFromCallsFor(String recipeTitle) {
+        for (int i = 0; i < ingredientsForDeleteFromCallsFor.size(); i++) {
+            try {
+                // First, delete from CALLSFOR.
+                String sqlDeleteStmt = "delete from CALLSFOR where recipeTitle = '"
+                        + recipeTitle + "' and ingredientName = '" + ingredientsForDeleteFromCallsFor.get(i) + "'";
+                System.out.println("deleting from callsfor: " + sqlDeleteStmt);
+                conn = ConnectDb.setupConnection();
+                stmt = conn.createStatement();
+                stmt.executeUpdate(sqlDeleteStmt);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    conn.close();
+                    stmt.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
             }
         }
     }
 
-    private void updateServedDuringMealToNewRecipeTitle(String newTitle, String oldTitle) {
-        // Update the SERVEDDURINGMEAL table to include the new recipe title.
+    private void updateRecipesNoTitleChange(String title, String instructions, String category) {
+        // Insert the item into the database.
         try {
-            String sqlUpdateStmt = "update SERVEDDURINGMEAL set recipeTitle = '" + newTitle + "' where recipeTitle = '" + oldTitle + "'";
+            String sqlUpdateStmt = "update RECIPES set instructions = '" + instructions + "', category = '"
+                    + category + "' where title = '" + title + "'";
+            System.out.println("about to update recipes...sql:" + sqlUpdateStmt);
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(sqlUpdateStmt);
@@ -558,8 +575,28 @@ public class RecipesGUI extends javax.swing.JPanel {
         }
     }
 
+    private void updateRecipesTitleChange(String oldTitle, String title, String instructions, String category) {
+        try {
+            String sqlInsertStmt = "update RECIPES set title = '" + title + "', "
+                    + "instructions = '" + instructions + "', category = '" + category + "' where "
+                    + "title = '" + oldTitle + "'";
+
+            conn = ConnectDb.setupConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sqlInsertStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
     private void insertIntoRecipes(String title, String instructions, String category) {
-        // Insert the item into the database.
         try {
             String sqlInsertStmt = "insert into RECIPES values ('" + title + "', '" + instructions + "', '" + category + "')";
 
@@ -580,50 +617,10 @@ public class RecipesGUI extends javax.swing.JPanel {
 
     private void insertIntoCallsFor(String title) {
         // Insert into the CALLSFOR table the ingredients used in the recipe.
-        for (int i = 0; i < ingredientsComboBox.getItemCount(); i++) {
+        for (int i = 0; i < ingredientsForInsertIntoCallsFor.size(); i++) {
             try {
-                String sqlInsertStmt = "insert into CALLSFOR values ('" + ingredientsComboBox.getItemAt(i) + "', '" + title + "')";
-                conn = ConnectDb.setupConnection();
-                stmt = conn.createStatement();
-                stmt.executeUpdate(sqlInsertStmt);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-            } finally {
-                try {  // Try closing the connection and the statement.
-                    conn.close();
-                    stmt.close();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
-                }
-            }
-        }
-    }
-
-    private void deleteOldRecipe(String oldTitle) {
-        for (int i = 0; i < ingredientsComboBox.getItemCount(); i++) {
-            try {
-                String sqlInsertStmt = "delete from RECIPES where title = '" + oldTitle + "'";
-                conn = ConnectDb.setupConnection();
-                stmt = conn.createStatement();
-                stmt.executeUpdate(sqlInsertStmt);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-            } finally {
-                try {  // Try closing the connection and the statement.
-                    conn.close();
-                    stmt.close();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
-                }
-            }
-        }
-    }
-
-    private void deleteIngredientsFromCallsFor(String title) {
-        // Will need to delete from CALLSFOR all recipes with the title that have the specified ingredients that have to be removed.
-        for (int i = 0; i < ingredientsComboBox.getItemCount(); i++) {
-            try {
-                String sqlInsertStmt = "delete from CALLSFOR where recipeTitle = '" + title + "'";
+                String sqlInsertStmt = "insert into CALLSFOR values ('" + ingredientsForInsertIntoCallsFor.get(i) + "', '" + title + "')";
+                System.out.println("inserting into callsfor: sql=" + sqlInsertStmt);
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
                 stmt.executeUpdate(sqlInsertStmt);
@@ -641,7 +638,13 @@ public class RecipesGUI extends javax.swing.JPanel {
     }
 
     private void addNewIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewIngredientButtonActionPerformed
-
+        String currentIngredient = unusedIngredientComboBox.getSelectedItem().toString();
+        if (ingredientsForDeleteFromCallsFor.contains(currentIngredient)) {
+            // Remove from ingredientsForDeleteFromCallsFor (adding it as an ingredient cancels out the removing it, which had apparently been done earlier)
+            ingredientsForDeleteFromCallsFor.remove(currentIngredient);
+        } else {  // Go on and add to ingredients that need to be inserted.
+            ingredientsForInsertIntoCallsFor.add(currentIngredient);
+        }
         if (!ingredientsComboBox.isVisible()) {  // Time to unhide this combo box (something is about to be added to it)
             ingredientsComboBox.setVisible(true);
             ingredientsLabel.setVisible(true);
@@ -662,7 +665,13 @@ public class RecipesGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_ingredientsComboBoxActionPerformed
 
     private void removeIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeIngredientButtonActionPerformed
-
+        String currentIngredient = ingredientsComboBox.getSelectedItem().toString();
+        if (ingredientsForInsertIntoCallsFor.contains(currentIngredient)) {
+            // Remove from ingredientsForInsertIntoCallsFor
+            ingredientsForInsertIntoCallsFor.remove(currentIngredient);
+        } else {  // Go on and add to ingredients that need to be inserted.
+            ingredientsForDeleteFromCallsFor.add(currentIngredient);
+        }
         if (!unusedIngredientComboBox.isVisible()) {  // Time to unhide this combo box (something is about to be added to it)
             unusedIngredientComboBox.setVisible(true);
             newIngredientLabel.setVisible(true);

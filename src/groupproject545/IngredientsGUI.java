@@ -9,15 +9,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -91,7 +87,6 @@ public class IngredientsGUI extends javax.swing.JPanel {
         ingredientsComboBox = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        inStockCheckBox = new java.awt.Checkbox();
         foodGroupTextField = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         nutritionFactsTextArea = new javax.swing.JTextArea();
@@ -100,8 +95,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
         addNewIngredientButton = new javax.swing.JButton();
         ingredientNameTextField = new javax.swing.JTextField();
         ingredientNameLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        inStockCheckBox = new java.awt.Checkbox();
 
         button1.setLabel("button1");
 
@@ -122,9 +117,6 @@ public class IngredientsGUI extends javax.swing.JPanel {
         jLabel1.setText("Nutrition facts:");
 
         jLabel2.setText("Food group:");
-
-        inStockCheckBox.setEnabled(false);
-        inStockCheckBox.setLabel("Item in stock");
 
         foodGroupTextField.setEditable(false);
 
@@ -156,16 +148,34 @@ public class IngredientsGUI extends javax.swing.JPanel {
 
         ingredientNameLabel.setText("Ingredient Name:");
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
-        jLabel3.setText("Deleting an ingredient will ");
+        inStockCheckBox.setEnabled(false);
+        inStockCheckBox.setLabel("Item in stock");
 
-        jLabel4.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
-        jLabel4.setText("remove it from your recipes!");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(219, 219, 219))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -183,15 +193,9 @@ public class IngredientsGUI extends javax.swing.JPanel {
                                 .addGap(18, 18, 18)
                                 .addComponent(ingredientNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(59, 59, 59)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(53, 53, 53)
-                                        .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(39, 39, 39))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(66, 66, 66)
                         .addComponent(addNewIngredientButton)
@@ -199,13 +203,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
                         .addComponent(submitChangesButton)
                         .addGap(35, 35, 35)
                         .addComponent(deleteIngredientButton)))
-                .addContainerGap(130, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel3))
-                .addGap(107, 107, 107))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -219,23 +217,19 @@ public class IngredientsGUI extends javax.swing.JPanel {
                             .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2)
                             .addComponent(ingredientNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ingredientNameLabel))
-                        .addGap(36, 36, 36)
-                        .addComponent(inStockCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ingredientNameLabel)))
                     .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addComponent(jLabel1)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
+                .addGap(36, 36, 36)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(submitChangesButton)
                     .addComponent(deleteIngredientButton)
                     .addComponent(addNewIngredientButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4)
-                .addGap(26, 26, 26))
+                .addGap(74, 74, 74))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -411,7 +405,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
 
             // Select first ingredient.
             ingredientsComboBox.setSelectedIndex(0);
-        } else {  // Remove ingredient from screen and database.
+        } else {  
+            // Remove ingredient from screen and database.
             // Delete from db.
             deleteFromIngredients(ingredientsComboBox.getSelectedItem().toString());
 
@@ -436,7 +431,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
                     + " foodGroup = '" + foodGroup + "', inStock = '" + inStockStr
                     + "', nutritionFacts = '" + nutritionFacts
                     + "' where name = '" + oldName + "'";
-            System.out.println("name changed. SQL = " + sqlUpdateStmt);
+            
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(sqlUpdateStmt);
@@ -538,8 +533,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> ingredientsComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea nutritionFactsTextArea;
     private javax.swing.JButton submitChangesButton;

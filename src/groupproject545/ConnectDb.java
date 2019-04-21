@@ -6,6 +6,7 @@ This class manages the connection to the Oracle database.
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Statement;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 
@@ -39,6 +40,17 @@ public class ConnectDb {
                 conn.close();
             } catch (Throwable whatever) {
                 System.out.println("Problem closing connection. Message: " + whatever);
+            }
+        }
+    }
+    
+    // Close statement
+    static void close(Statement stmt) {
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (Throwable whatever) {
+                System.out.println("Problem closing statement. Message: " + whatever);
             }
         }
     }

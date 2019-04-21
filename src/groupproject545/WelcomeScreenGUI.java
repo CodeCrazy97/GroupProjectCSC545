@@ -50,6 +50,11 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         });
 
         mealsButton.setText("Meals");
+        mealsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mealsButtonActionPerformed(evt);
+            }
+        });
 
         mealPlansButton.setText("Meal Plans");
         mealPlansButton.addActionListener(new java.awt.event.ActionListener() {
@@ -118,6 +123,15 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the welcome menu.
 
     }//GEN-LAST:event_recipesButtonActionPerformed
+
+    private void mealsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealsButtonActionPerformed
+        // show the meals screen
+        JFrame frame = new JFrame("My Meals");
+
+        MealsGUI meals = new MealsGUI(frame);
+        
+        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the welcome menu.
+    }//GEN-LAST:event_mealsButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ingredientsButton;

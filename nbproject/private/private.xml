@@ -3,12 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/AddMealPlanGUI.java</file>
-            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/MealPlanGUI.java</file>
-            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/ConfigureScheduleGUI.java</file>
             <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/IngredientsGUI.java</file>
-            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/Ingredients.java</file>
+            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/MealsGUI.java</file>
             <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/ConnectDb.java</file>
+            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/MealPlanGUI.java</file>
+            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/Recipes.java</file>
+            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/Ingredients.java</file>
+            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/RecipesGUI.java</file>
+            <file>file:/C:/Users/Ethan_2/Documents/CSC%20545/Group%20Project/GroupProject545/src/groupproject545/WelcomeScreenGUI.java</file>
         </group>
     </open-files>
 </project-private>

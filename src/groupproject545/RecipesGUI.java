@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleResultSet;
 
 /**
  *
@@ -22,6 +24,8 @@ import javax.swing.JOptionPane;
  */
 public class RecipesGUI extends javax.swing.JPanel {
 
+    OraclePreparedStatement pst = null;
+    OracleResultSet rs = null;
     Connection conn = null;
     Statement stmt = null;
 
@@ -67,39 +71,58 @@ public class RecipesGUI extends javax.swing.JPanel {
         // Hide the adding a new ingredient components (until user wants to).
         changeEditingMode(false);
         removeIngredientButton.setVisible(false);  // Not editing, so hide this button.
+
+        getRecipesFilterByCategory();
+        getRecipesFilterByIngredient();
     }
 
-    /*
-    private void putValuesIntoIngredientsFilterComboBox() {
-        
-    }
-    
-    private boolean ingredientsCBoxContainsValue(String value) {
-        for (int i = 0; i < ingredientsFilterComboBox.getItemCount(); i++) {
-            if (ingredientsFilterComboBox.getItemAt(i).equals(value)) {
-                return true;
+    private void getRecipesFilterByCategory() {
+        conn = ConnectDb.setupConnection();
+        try {
+            String sqlStatement = "select distinct category from RECIPES order by category";
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            rs = (OracleResultSet) pst.executeQuery();
+            categoryFilterComboBox.removeAllItems();
+            categoryFilterComboBox.addItem("-- PICK --");
+            while (rs.next()) {
+                String category = rs.getString(1);
+                categoryFilterComboBox.addItem(category);
             }
+
+        } catch (Exception ex) {
+            System.out.println("ERROR: " + ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
         }
-        return false;
+
     }
-    */
-    private void putValuesIntoCategoryFilterComboBox() {
-        for (int i = 0; i < recipes.size(); i++) {
-            if (!categoryCBoxContainsValue(recipes.get(i).getCategory())) {
-                categoryFilterComboBox.addItem(recipes.get(i).getCategory());
+
+    private void getRecipesFilterByIngredient() {
+
+        conn = ConnectDb.setupConnection();
+        try {
+            String sqlStatement = "select distinct ingredientName from CALLSFOR order by ingredientName";
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            rs = (OracleResultSet) pst.executeQuery();
+            ingredientsFilterComboBox.removeAllItems();
+            ingredientsFilterComboBox.addItem("-- PICK --");
+            while (rs.next()) {
+                String ingredientName = rs.getString(1);
+                ingredientsFilterComboBox.addItem(ingredientName);
             }
+
+        } catch (Exception ex) {
+            System.out.println("ERROR: " + ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
         }
+
     }
-    
-    private boolean categoryCBoxContainsValue(String value) {
-        for (int i = 0; i < categoryFilterComboBox.getItemCount(); i++) {
-            if (categoryFilterComboBox.getItemAt(i).equals(value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
+
     private void changeEditingMode(boolean mode) {
         if (mode) {
             deleteRecipeButton.setText("Cancel");
@@ -170,11 +193,14 @@ public class RecipesGUI extends javax.swing.JPanel {
         addNewIngredientButton = new javax.swing.JButton();
         unusedIngredientComboBox = new javax.swing.JComboBox<>();
         newIngredientLabel = new javax.swing.JLabel();
-        filtersPanel = new javax.swing.JPanel();
-        ingredientsFilterComboBox = new javax.swing.JComboBox<>();
-        categoryFilterComboBox = new javax.swing.JComboBox<>();
-        jLabel5 = new javax.swing.JLabel();
+        existingRecipesPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        filteredRecipesTextArea = new javax.swing.JTextArea();
         jLabel3 = new javax.swing.JLabel();
+        filtersPanel = new javax.swing.JPanel();
+        categoryFilterComboBox = new javax.swing.JComboBox<>();
+        ingredientsFilterComboBox = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
         recipesComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -245,13 +271,24 @@ public class RecipesGUI extends javax.swing.JPanel {
 
         newIngredientLabel.setText("New Ingredient:");
 
-        jLabel5.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
-        jLabel5.setText("Ingredients");
+        filteredRecipesTextArea.setEditable(false);
+        filteredRecipesTextArea.setColumns(20);
+        filteredRecipesTextArea.setRows(5);
+        jScrollPane2.setViewportView(filteredRecipesTextArea);
 
-        jLabel3.setText("Filters:");
+        jLabel3.setText("Show recipes by category/ingredeints used:");
 
-        jLabel4.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
-        jLabel4.setText("Category");
+        categoryFilterComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                categoryFilterComboBoxActionPerformed(evt);
+            }
+        });
+
+        ingredientsFilterComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ingredientsFilterComboBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout filtersPanelLayout = new javax.swing.GroupLayout(filtersPanel);
         filtersPanel.setLayout(filtersPanelLayout);
@@ -259,34 +296,64 @@ public class RecipesGUI extends javax.swing.JPanel {
             filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(filtersPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(filtersPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(70, 70, 70))
-                    .addGroup(filtersPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(30, 30, 30)
-                        .addComponent(categoryFilterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(58, 58, 58)))
-                .addGroup(filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ingredientsFilterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(filtersPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jLabel5)))
-                .addContainerGap())
+                .addGroup(filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(categoryFilterComboBox, 0, 91, Short.MAX_VALUE)
+                    .addComponent(ingredientsFilterComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         filtersPanelLayout.setVerticalGroup(
             filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(filtersPanelLayout.createSequentialGroup()
+                .addComponent(categoryFilterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(ingredientsFilterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
+        jLabel5.setText("Ingredients");
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
+        jLabel4.setText("Category");
+
+        javax.swing.GroupLayout existingRecipesPanel2Layout = new javax.swing.GroupLayout(existingRecipesPanel2);
+        existingRecipesPanel2.setLayout(existingRecipesPanel2Layout);
+        existingRecipesPanel2Layout.setHorizontalGroup(
+            existingRecipesPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5))
-                .addGap(21, 21, 21)
-                .addGroup(filtersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(categoryFilterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ingredientsFilterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
+                .addGroup(existingRecipesPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addGroup(existingRecipesPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(filtersPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        existingRecipesPanel2Layout.setVerticalGroup(
+            existingRecipesPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addGroup(existingRecipesPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
+                        .addGroup(existingRecipesPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(filtersPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
+                                .addGap(19, 19, 19)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel5)))
+                        .addGap(170, 170, 170))
+                    .addGroup(existingRecipesPanel2Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -306,30 +373,6 @@ public class RecipesGUI extends javax.swing.JPanel {
                                 .addGap(30, 30, 30)
                                 .addComponent(deleteRecipeButton))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(50, 50, 50)
-                                .addComponent(instructionsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(120, 120, 120)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(ingredientsLabel)
-                                            .addComponent(newIngredientLabel))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(unusedIngredientComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(removeIngredientButton)
-                                            .addComponent(addNewIngredientButton)))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(103, 103, 103)
-                                        .addComponent(recipesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(76, 76, 76))))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGap(120, 120, 120)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(recipeTitleLabel)
@@ -337,18 +380,39 @@ public class RecipesGUI extends javax.swing.JPanel {
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(recipeCategoryTextField)
-                                    .addComponent(recipeTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addComponent(recipeTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(50, 50, 50)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(existingRecipesPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(instructionsLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(370, 370, 370)
+                        .addComponent(recipesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(214, 214, 214)
-                        .addComponent(filtersPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(221, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(ingredientsLabel)
+                            .addComponent(newIngredientLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(unusedIngredientComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(removeIngredientButton)
+                            .addComponent(addNewIngredientButton))))
+                .addContainerGap(353, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addComponent(filtersPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(109, 109, 109)
+                .addContainerGap()
+                .addComponent(existingRecipesPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(57, 57, 57)
                 .addComponent(recipesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -368,7 +432,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                     .addComponent(addNewIngredientButton)
                     .addComponent(newIngredientLabel)
                     .addComponent(unusedIngredientComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(instructionsLabel))
@@ -753,9 +817,116 @@ public class RecipesGUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_removeIngredientButtonActionPerformed
 
+    private void showFilteredRecipes(String ingredient, String category) {
+        
+        // clean out the text area
+        filteredRecipesTextArea.setText("");
+        
+        List<String> recipesFilteredByIngredient = new ArrayList<String>();
+        List<String> recipesFilteredByCategory = new ArrayList<String>();
+
+        if (ingredient.equals("-- PICK --") && category.equals("-- PICK --")) {
+            // do nothing
+        } else if (ingredient.equals("-- PICK --")) {  // filter by category
+
+            conn = ConnectDb.setupConnection();
+            try {
+                String sqlStatement = "select title from RECIPES where category = '" + category + "' order by title";
+                pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+                rs = (OracleResultSet) pst.executeQuery();
+                while (rs.next()) {
+                    filteredRecipesTextArea.append("\n" + rs.getString(1));
+                }
+
+            } catch (Exception ex) {
+                System.out.println("ERROR: " + ex);
+            } finally {
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
+            }
+        } else if (category.equals("-- PICK --")) {  // filter by ingredient
+
+            conn = ConnectDb.setupConnection();
+            try {
+                String sqlStatement = "select recipeTitle from CALLSFOR where ingredientName = '" + ingredient + "' order by recipeTitle";
+                pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+                rs = (OracleResultSet) pst.executeQuery();
+                while (rs.next()) {
+                    filteredRecipesTextArea.append("\n" + rs.getString(1));
+                }
+
+            } catch (Exception ex) {
+                System.out.println("ERROR: " + ex);
+            } finally {
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
+            }
+        } else {  // filter by both
+
+            conn = ConnectDb.setupConnection();
+            try {
+                String sqlStatement = "select recipeTitle from CALLSFOR where ingredientName = '" + ingredient + "' order by recipeTitle";
+                pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+                rs = (OracleResultSet) pst.executeQuery();
+                while (rs.next()) {
+                    String rSelection = rs.getString(1);
+                    recipesFilteredByIngredient.add(rSelection);
+                }
+
+            } catch (Exception ex) {
+                System.out.println("ERROR: " + ex);
+            } finally {
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
+            }
+
+            // get recipes filtered by category
+            conn = ConnectDb.setupConnection();
+            try {
+                String sqlStatement = "select title from RECIPES where category = '" + category + "' order by title";
+                pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+                rs = (OracleResultSet) pst.executeQuery();
+                while (rs.next()) {
+                    String rSelection = rs.getString(1);
+                    recipesFilteredByCategory.add(rSelection);
+                }
+
+            } catch (Exception ex) {
+                System.out.println("ERROR: " + ex);
+            } finally {
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
+            }
+
+            for (int i = 0; i < recipesFilteredByCategory.size(); i++) {
+                if (recipesFilteredByIngredient.contains(recipesFilteredByCategory.get(i))) {
+                    filteredRecipesTextArea.append("\n" + recipesFilteredByCategory.get(i));
+                }
+            }
+
+        }
+
+    }
+
     private void unusedIngredientComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unusedIngredientComboBoxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_unusedIngredientComboBoxActionPerformed
+
+    private void categoryFilterComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryFilterComboBoxActionPerformed
+        if (ingredientsFilterComboBox.getItemCount() > 0 && categoryFilterComboBox.getItemCount() > 0) {
+            showFilteredRecipes(ingredientsFilterComboBox.getSelectedItem().toString(), categoryFilterComboBox.getSelectedItem().toString());
+        }
+    }//GEN-LAST:event_categoryFilterComboBoxActionPerformed
+
+    private void ingredientsFilterComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ingredientsFilterComboBoxActionPerformed
+        if (ingredientsFilterComboBox.getItemCount() > 0 && categoryFilterComboBox.getItemCount() > 0) {
+            showFilteredRecipes(ingredientsFilterComboBox.getSelectedItem().toString(), categoryFilterComboBox.getSelectedItem().toString());
+        }
+    }//GEN-LAST:event_ingredientsFilterComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -765,6 +936,8 @@ public class RecipesGUI extends javax.swing.JPanel {
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JButton deleteRecipeButton;
     private javax.swing.JButton editRecipeButton;
+    private javax.swing.JPanel existingRecipesPanel2;
+    private javax.swing.JTextArea filteredRecipesTextArea;
     private javax.swing.JPanel filtersPanel;
     private javax.swing.JComboBox<String> ingredientsComboBox;
     private javax.swing.JComboBox<String> ingredientsFilterComboBox;
@@ -775,6 +948,7 @@ public class RecipesGUI extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel newIngredientLabel;
     private javax.swing.JTextField recipeCategoryTextField;
     private javax.swing.JLabel recipeTitleLabel;

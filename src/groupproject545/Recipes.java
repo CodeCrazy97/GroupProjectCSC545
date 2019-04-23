@@ -121,7 +121,7 @@ public class Recipes {
      * Updates current recipe
      * @throws Exception 
      */
-    public void updateRecipe() throws Exception {
+    public void update() throws Exception {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement updateRecipe = null;
         
@@ -142,7 +142,7 @@ public class Recipes {
     /**
      * Adds recipe
      */
-    public void addRecipe() throws Exception {
+    public void add() throws Exception {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement addRecipe = null;
         try {

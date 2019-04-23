@@ -143,7 +143,7 @@ public class Ingredients {
      * TODO: Check if it actually works
      * @author Chris
      */
-    public void updateIngredient() throws Exception {
+    public void update() throws Exception {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement updateIngredient = null;
         
@@ -165,7 +165,7 @@ public class Ingredients {
      * Adds ingredient to the database
      * @throws Exception 
      */
-    public void addIngredient() throws Exception {
+    public void add() throws Exception {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement addIngredient = null;
         try {

@@ -117,5 +117,46 @@ public class Recipes {
         }
         return unusedIngredients;
     }
+    /**
+     * Updates current recipe
+     * @throws Exception 
+     */
+    public void updateRecipe() throws Exception {
+        Connection conn = ConnectDb.setupConnection();
+        OraclePreparedStatement updateRecipe = null;
+        
+        try {
+            String sqlStatement = "Update RECIPES set category=?, instructions=? where title=?";
+            updateRecipe = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            updateRecipe.setString(3, this.title);
+            updateRecipe.setString(1, this.category);
+            updateRecipe.setString(2, this.instructions);
+            updateRecipe.executeUpdate();
+            conn.commit();
+            
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+    }
+    
+    /**
+     * Adds recipe
+     */
+    public void addRecipe() throws Exception {
+        Connection conn = ConnectDb.setupConnection();
+        OraclePreparedStatement addRecipe = null;
+        try {
+            String sqlStatement = "Insert into Recipes (title, category, instructions) " 
+                    + "values (?, ?, ?)";
+            addRecipe = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            addRecipe.setString(1, this.title);
+            addRecipe.setString(2, this.category);
+            addRecipe.setString(3, this.instructions);
+            addRecipe.executeUpdate();
+            conn.commit();
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+    }
 
 }

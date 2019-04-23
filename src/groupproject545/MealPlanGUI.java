@@ -160,6 +160,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
         scheduleTable = new javax.swing.JTable();
         mealPlanComboBox = new javax.swing.JComboBox<>();
         editMealPlanButton = new javax.swing.JButton();
+        deleteMealPlanButton = new javax.swing.JButton();
 
         addMealPlanButton.setText("Add a Meal Plan");
         addMealPlanButton.addActionListener(new java.awt.event.ActionListener() {
@@ -206,6 +207,8 @@ public class MealPlanGUI extends javax.swing.JPanel {
             }
         });
 
+        deleteMealPlanButton.setText("Delete Plan");
+
         javax.swing.GroupLayout schedulingPanelLayout = new javax.swing.GroupLayout(schedulingPanel);
         schedulingPanel.setLayout(schedulingPanelLayout);
         schedulingPanelLayout.setHorizontalGroup(
@@ -221,6 +224,10 @@ public class MealPlanGUI extends javax.swing.JPanel {
             .addGroup(schedulingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane2))
+            .addGroup(schedulingPanelLayout.createSequentialGroup()
+                .addGap(443, 443, 443)
+                .addComponent(deleteMealPlanButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         schedulingPanelLayout.setVerticalGroup(
             schedulingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -232,7 +239,9 @@ public class MealPlanGUI extends javax.swing.JPanel {
                     .addComponent(editMealPlanButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(193, 193, 193))
+                .addGap(87, 87, 87)
+                .addComponent(deleteMealPlanButton)
+                .addGap(81, 81, 81))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -297,6 +306,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addMealPlanButton;
     private javax.swing.JButton configureScheduleButton;
+    private javax.swing.JButton deleteMealPlanButton;
     private javax.swing.JButton editMealPlanButton;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JComboBox<String> mealPlanComboBox;

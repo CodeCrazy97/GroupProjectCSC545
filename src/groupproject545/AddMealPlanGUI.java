@@ -10,7 +10,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import oracle.jdbc.OraclePreparedStatement;
@@ -25,13 +26,22 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     /**
      * Creates new form AddMealPlanGUI
      */
-    public String mealPlanTitle = null;
+    
+    // mealPlan is an instance of the MealDays class that will allow us to use the methods contained in that class
+    public MealDays mealPlan = null;
+    
+    // mealDays will hold all the mealDays that need inserted into the database 
+    public List<MealDays> mealDays = new ArrayList<MealDays>();
+    
+    
     public PreparedStatement pst = null;
     public Connection conn = null;
     public OracleResultSet rs = null;
 
+    // EDIT_MODE: determines if we are editing an old meal plan or creating a new meal plan
+    public final boolean EDIT_MODE;
+    
     public AddMealPlanGUI(String mealPlanTitle, JFrame frame) {
-        this.mealPlanTitle = mealPlanTitle;
         initComponents();
 
         // Maximize the size of the jframe.
@@ -53,8 +63,11 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         frame.addWindowListener(exitListener);  // Add the custom designed listener.
 
         if (mealPlanTitle != null) {  // We are editing an old plan.
+            mealPlan = new MealDays(mealPlanTitle);
+            EDIT_MODE = true;
             submitButton.setText("Submit Changes");
         } else {  // Creating a new plan.
+            EDIT_MODE = false;
             submitButton.setText("Submit Meal Plan");
         }
 
@@ -215,6 +228,14 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void getMeals() {  
+        if (EDIT_MODE) { // get all meals used in this meal plan (if in edit mode) for the selected day of the week
+            
+        } else { // get all meals in the database (if creating a new meal plan)
+            
+        }
+    }
+    
     private void mealsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_mealsListValueChanged
         // Hide modify button if only item is selected.
         if (mealsList.getSelectedIndices().length >= 1) {  // Allow deletion of one or more meals.

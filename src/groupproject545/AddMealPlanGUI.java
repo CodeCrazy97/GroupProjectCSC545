@@ -291,15 +291,27 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             String mealName = mealNameTextField.getText();
             String mealDay = daysOfWeekComboBox.getSelectedItem().toString();
             MealDays md = new MealDays(mealTitle, mealName, mealName);
-            if (!mealDays.contains(md)){
+            if (!mealDayDoesNotExist(md)){
                 mealDays.add(md);  // append to the list
-                System.out.println("does not exist!!!");
+                System.out.println("meal day does not exist");
             } else {
-                System.out.println("exists");
+                System.out.println("meal day exists");
             }
         }
     }//GEN-LAST:event_addMealButtonActionPerformed
 
+    private boolean mealDayDoesNotExist(MealDays md) {
+        for (MealDays mealDay : mealDays) {
+            if (mealDay.getDayOfWeek().equals(md.getDayOfWeek()) && mealDay.getMealName().equals(md.getMealName()) && mealDay.getMealTitle().equals(md.getMealTitle())) {
+              // this meal already exists in the list
+                return true;
+            }
+        }
+        // passed all the checks - meal does not exist
+        return false;
+    }
+    
+    
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         if (mealPlanNameDoesNotExist(mealPlanTitleTextField.getText()) && stringNotEmpty(mealPlanTitleTextField.getText())) {
             // insert the meal plan into the database

@@ -9,6 +9,7 @@ import java.util.*;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 
@@ -22,11 +23,12 @@ public class MealPlanGUI extends javax.swing.JPanel {
     OraclePreparedStatement pst = null;
     OracleResultSet rs = null;
 
+    public static DefaultTableModel model = null;  // used for adding/removing rows and editing cells in the schedule table
+
     /**
      * Creates new form MealPlanGUI
      */
     public MealPlanGUI(JFrame frame) {
-
         // Initialize components. Do not attempt to use GUI components (buttons, labels, etc.) until this has been done.
         initComponents();
 
@@ -65,28 +67,26 @@ public class MealPlanGUI extends javax.swing.JPanel {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        scheduleTable.getModel().setValueAt("hello\n\thi", 1, 2);
+        model = (DefaultTableModel) scheduleTable.getModel();
     }
 
     private void getMealPlans() {
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from MEALPLAN order by TITLE";
+            String sqlStatement = "select * from MEALPLAN order by title";
 
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
             if (!rs.next()) {  // No rows returned from the query - hide the combo box, label, and jtable.
-                mealPlanComboBox.setVisible(false);
                 // Hide the JPanel that encapsulates the scheduleTable
-                scheduleHoldingPanel.setVisible(false);
-                selectPlanLabel.setVisible(false);
+                schedulingPanel.setVisible(false);
 
                 // Let the user know there are not any meal plans.
                 messageLabel.setText("You currently do not have any meal plans.");
                 messageLabel.setVisible(true);
 
-                // Hide the edit meal plan button.
-                editMealPlanButton.setVisible(false);
             } else {
                 // Place all the meal plans in the drop down menu.
                 while (rs.next()) {
@@ -110,7 +110,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
                     rs = (OracleResultSet) pst.executeQuery();
                     if (!rs.next()) {  // No meal plan scheduled for this week. Hide the jtable.
                         // Hide the JPanel that encapsulates the scheduleTable
-                        scheduleHoldingPanel.setVisible(false);
+                        schedulingPanel.setVisible(false);
 
                         // Let the user know there are not any meal plans.
                         messageLabel.setText("There is not an active meal plan for this week. Click on \"Edit Plan\" to configure your meal plan schedule.");
@@ -151,23 +151,15 @@ public class MealPlanGUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        mealPlanComboBox = new javax.swing.JComboBox<>();
-        selectPlanLabel = new javax.swing.JLabel();
         addMealPlanButton = new javax.swing.JButton();
         configureScheduleButton = new javax.swing.JButton();
-        editMealPlanButton = new javax.swing.JButton();
-        scheduleHoldingPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        scheduleTable = new javax.swing.JTable();
         messageLabel = new javax.swing.JLabel();
-
-        mealPlanComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mealPlanComboBoxActionPerformed(evt);
-            }
-        });
-
-        selectPlanLabel.setText("Select Plan:");
+        schedulingPanel = new javax.swing.JPanel();
+        selectPlanLabel = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        scheduleTable = new javax.swing.JTable();
+        mealPlanComboBox = new javax.swing.JComboBox<>();
+        editMealPlanButton = new javax.swing.JButton();
 
         addMealPlanButton.setText("Add a Meal Plan");
         addMealPlanButton.addActionListener(new java.awt.event.ActionListener() {
@@ -183,6 +175,30 @@ public class MealPlanGUI extends javax.swing.JPanel {
             }
         });
 
+        messageLabel.setFont(new java.awt.Font("Tahoma", 2, 18)); // NOI18N
+        messageLabel.setText("You currently do not have any meal plans.");
+
+        selectPlanLabel.setText("Select Plan:");
+
+        scheduleTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+            }
+        ));
+        jScrollPane2.setViewportView(scheduleTable);
+
+        mealPlanComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mealPlanComboBoxActionPerformed(evt);
+            }
+        });
+
         editMealPlanButton.setText("Edit Plan");
         editMealPlanButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,79 +206,67 @@ public class MealPlanGUI extends javax.swing.JPanel {
             }
         });
 
-        scheduleTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null, null}
-            },
-            new String [] {
-                "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-            }
-        ));
-        jScrollPane1.setViewportView(scheduleTable);
-
-        javax.swing.GroupLayout scheduleHoldingPanelLayout = new javax.swing.GroupLayout(scheduleHoldingPanel);
-        scheduleHoldingPanel.setLayout(scheduleHoldingPanelLayout);
-        scheduleHoldingPanelLayout.setHorizontalGroup(
-            scheduleHoldingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(scheduleHoldingPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout schedulingPanelLayout = new javax.swing.GroupLayout(schedulingPanel);
+        schedulingPanel.setLayout(schedulingPanelLayout);
+        schedulingPanelLayout.setHorizontalGroup(
+            schedulingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(schedulingPanelLayout.createSequentialGroup()
+                .addGap(292, 292, 292)
+                .addComponent(selectPlanLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(mealPlanComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(67, 67, 67)
+                .addComponent(editMealPlanButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(311, 311, 311))
+            .addGroup(schedulingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 672, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(jScrollPane2))
         );
-        scheduleHoldingPanelLayout.setVerticalGroup(
-            scheduleHoldingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(scheduleHoldingPanelLayout.createSequentialGroup()
+        schedulingPanelLayout.setVerticalGroup(
+            schedulingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(schedulingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGroup(schedulingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(selectPlanLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mealPlanComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(editMealPlanButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(193, 193, 193))
         );
-
-        messageLabel.setFont(new java.awt.Font("Tahoma", 2, 18)); // NOI18N
-        messageLabel.setText("You currently do not have any meal plans.");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(editMealPlanButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(addMealPlanButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(configureScheduleButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 503, Short.MAX_VALUE)
-                        .addComponent(selectPlanLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mealPlanComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(83, 83, 83)
-                        .addComponent(scheduleHoldingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(258, 258, 258)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(addMealPlanButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(configureScheduleButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(118, 118, 118)
                 .addComponent(messageLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(schedulingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(29, 29, 29))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(mealPlanComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(selectPlanLabel)
-                    .addComponent(addMealPlanButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(configureScheduleButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(editMealPlanButton)
-                .addGap(26, 26, 26)
-                .addComponent(messageLabel)
-                .addGap(18, 18, 18)
-                .addComponent(scheduleHoldingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(addMealPlanButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(configureScheduleButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addComponent(messageLabel)))
+                .addGap(94, 94, 94)
+                .addComponent(schedulingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(90, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -294,11 +298,11 @@ public class MealPlanGUI extends javax.swing.JPanel {
     private javax.swing.JButton addMealPlanButton;
     private javax.swing.JButton configureScheduleButton;
     private javax.swing.JButton editMealPlanButton;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JComboBox<String> mealPlanComboBox;
     private javax.swing.JLabel messageLabel;
-    private javax.swing.JPanel scheduleHoldingPanel;
     private javax.swing.JTable scheduleTable;
+    private javax.swing.JPanel schedulingPanel;
     private javax.swing.JLabel selectPlanLabel;
     // End of variables declaration//GEN-END:variables
 

@@ -11,6 +11,8 @@ drop trigger ingredients_update_t2;
 drop trigger recipes_update_t1;
 drop trigger recipes_update_t2;
 drop trigger meals_update_t1;
+drop trigger meals_update_t2;
+drop trigger mealplan_update_t1;
 
 drop table INGREDIENTS cascade constraints;
 drop table RECIPES cascade constraints;
@@ -111,7 +113,7 @@ begin									-- action
 end;
 /
 
--- trigger to update SERVEDDURINGMEAL when meal name is changed.
+-- trigger to update SERVEDDURINGMEAL when meal name is changed/deleted.
 create or replace trigger meals_update_t1
 after update on meals					-- event
 referencing 
@@ -123,6 +125,29 @@ begin									-- action
 end;
 /
 
+-- trigger to update MEALDAY when meal name is changed/deleted
+create or replace trigger meals_update_t2
+after update on meals					-- event
+referencing 
+new as newrow
+old as oldrow
+for each row
+begin									-- action
+	update mealDay set mealName = :newrow.name where mealName = :oldrow.name;	
+end;
+/
+
+-- trigger to update MEALDAY when meal plan title is changed/deleted
+create or replace trigger mealplan_update_t1
+after update on mealPlan					-- event
+referencing 
+new as newrow
+old as oldrow
+for each row
+begin									-- action
+	update mealDay set mealPlanTitle = :newrow.title where mealPlanTitle = :oldrow.title;	
+end;
+/
 
 
 insert into ingredients values('broccoli','vegetables','Y','high in fiber, very high in vitamin C and has potassium, B6 and vitamin A'); 

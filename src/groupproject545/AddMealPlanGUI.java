@@ -8,8 +8,13 @@ package groupproject545;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleResultSet;
 
 /**
  *
@@ -21,6 +26,9 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
      * Creates new form AddMealPlanGUI
      */
     public String mealPlanTitle = null;
+    public PreparedStatement pst = null;
+    public Connection conn = null;
+    public OracleResultSet rs = null;
 
     public AddMealPlanGUI(String mealPlanTitle, JFrame frame) {
         this.mealPlanTitle = mealPlanTitle;
@@ -76,8 +84,14 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
         mealPlanTitleTextField = new javax.swing.JTextField();
         cancelButton = new javax.swing.JButton();
+        addMealButton = new javax.swing.JButton();
 
         submitButton.setText("Submit Meal Plan");
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }));
 
@@ -87,11 +101,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        mealsList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
         mealsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 mealsListValueChanged(evt);
@@ -111,6 +120,13 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
+            }
+        });
+
+        addMealButton.setText("Add Meal");
+        addMealButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addMealButtonActionPerformed(evt);
             }
         });
 
@@ -145,14 +161,19 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 116, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(submitButton)
-                        .addGap(210, 210, 210)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(submitButton)
+                                .addGap(210, 210, 210))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(addMealButton)
+                                .addGap(242, 242, 242)))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
-                        .addComponent(deleteButton)))
+                        .addComponent(deleteButton))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(37, 37, 37))
             .addGroup(layout.createSequentialGroup()
                 .addGap(278, 278, 278)
@@ -177,6 +198,8 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(addMealButton)
+                .addGap(18, 18, 18)
                 .addComponent(submitButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cancelButton)
@@ -188,7 +211,7 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(deleteButton)
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addContainerGap(73, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -201,19 +224,61 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_mealsListValueChanged
 
+    private boolean mealPlanNameNotEmpty(String mealPlanName) {
+        if (mealPlanName.equals("") || mealPlanName == null) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean mealPlanNameDoesNotExist(String mealPlanTitle) {
+        conn = ConnectDb.setupConnection();
+        try {
+            String sqlStatement = "select * from MEALPLANS where title = '" + mealPlanTitle + "'";
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            rs = (OracleResultSet) pst.executeQuery();
+            if (rs.next()) {
+                return false;
+            } else {
+                return true;
+            }
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
+        }
+        System.out.println("There was a problem checking if the meal plan title exists or not.");
+        return false;
+    }
+
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 
         //  Go back to the meal plan screen without submitting changes to the database.
         JFrame frame = new JFrame("My Meal Plans");
-        
+
         MealPlanGUI mealPlanGUI = new MealPlanGUI(frame);
 
         // Close the frame, don't submit changes.
         ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void addMealButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addMealButtonActionPerformed
+
+    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        if (mealPlanNameDoesNotExist(mealPlanTitleTextField.getText()) && mealPlanNameNotEmpty(mealPlanTitleTextField.getText())) {
+            // insert the meal plan into the database
+            
+        }
+    }//GEN-LAST:event_submitButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addMealButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton deleteButton;
     private javax.swing.JComboBox<String> jComboBox1;

@@ -138,12 +138,49 @@ public class Ingredients {
         return AllIngredients;
     }
 
-    /**
-     * Updates the ingredient in the database TODO
+       /**
+     * Updates the ingredient in the database
+     * TODO: Check if it actually works
+     * @author Chris
      */
-    public void updateIngredient() throws Exception {
+    public void update() throws Exception {
         Connection conn = ConnectDb.setupConnection();
-
+        OraclePreparedStatement updateIngredient = null;
+        
+        try {
+            String sqlStatement = "Update INGREDIENTS set foodGroup=?, inStock=?, nutritionFacts=? where name=?";
+            updateIngredient = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            updateIngredient.setString(1, this.foodGroup);
+            updateIngredient.setString(2, this.inStock ? "Y": "N");
+            updateIngredient.setString(3, this.nutritionFacts);
+            updateIngredient.setString(4, this.name);
+            updateIngredient.executeUpdate();
+            conn.commit();
+            
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+    }
+    /**
+     * Adds ingredient to the database
+     * @throws Exception 
+     */
+    public void add() throws Exception {
+        Connection conn = ConnectDb.setupConnection();
+        OraclePreparedStatement addIngredient = null;
+        try {
+            String sqlStatement = "Insert into INGREDIENTS (name, foodGroup, inStock, nutritionFacts) " 
+                    + "values (?, ?, ?, ?)";
+            addIngredient = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+            addIngredient.setString(1, this.name);
+            addIngredient.setString(2, this.foodGroup);
+            addIngredient.setString(3, this.inStock ? "Y": "N");
+            addIngredient.setString(4, this.nutritionFacts);
+            addIngredient.executeUpdate();
+            conn.commit();
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
     }
 
 }

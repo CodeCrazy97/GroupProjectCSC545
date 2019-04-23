@@ -66,7 +66,7 @@ dayOfWeek varchar(9) check (dayOfWeek in ('Sunday', 'Monday', 'Tuesday', 'Wednes
 mealTitle varchar(100),
 mealName varchar(100),
 mealPlanTitle varchar(100),
-primary key (dayOfWeek, mealTitle, mealName, mealPlanTitle),
+primary key (dayOfWeek, mealTitle, mealName),
 constraint fk_mealDay_mealname foreign key (mealName) references meals(name) on delete cascade,
 constraint fk_mealDay_mealplantitle foreign key (mealPlanTitle) references mealPlan(title) on delete cascade
 );

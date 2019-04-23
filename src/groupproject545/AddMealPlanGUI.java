@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
@@ -26,21 +27,19 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     /**
      * Creates new form AddMealPlanGUI
      */
-    
     // mealPlan is an instance of the MealDays class that will allow us to use the methods contained in that class
     public MealDays mealPlan = null;
-    
+
     // mealDays will hold all the mealDays that need inserted into the database 
     public List<MealDays> mealDays = new ArrayList<MealDays>();
-    
-    
+
     public PreparedStatement pst = null;
     public Connection conn = null;
     public OracleResultSet rs = null;
 
     // EDIT_MODE: determines if we are editing an old meal plan or creating a new meal plan
     public final boolean EDIT_MODE;
-    
+
     public AddMealPlanGUI(String mealPlanTitle, JFrame frame) {
         initComponents();
 
@@ -225,14 +224,14 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void getMeals() {  
+    private void getMeals() {
         if (EDIT_MODE) { // get all meals used in this meal plan (if in edit mode) for the selected day of the week
-            
+
         } else { // get all meals in the database (if creating a new meal plan)
-            
+
         }
     }
-    
+
     private void mealsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_mealsListValueChanged
         // Hide modify button if only item is selected.
         if (mealsList.getSelectedIndices().length >= 1) {  // Allow deletion of one or more meals.
@@ -289,12 +288,16 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             // now make sure that this specific meal title, with this specific meal name, on this specific day does not already exist in the list
             String mealTitle = mealTitlesComboBox.getSelectedItem().toString();
             String mealName = mealNameTextField.getText();
-            String mealDay = daysOfWeekComboBox.getSelectedItem().toString();
-            MealDays md = new MealDays(mealTitle, mealName, mealName);
-            if (!mealDayDoesNotExist(md)){
+            String dayOfWeek = daysOfWeekComboBox.getSelectedItem().toString();
+            MealDays md = new MealDays(mealTitle, mealName, dayOfWeek);
+            if (!mealDayDoesNotExist(md)) {
                 mealDays.add(md);  // append to the list
                 System.out.println("meal day does not exist");
             } else {
+                JOptionPane.showMessageDialog(this,
+                        "That meal day for this meal plan already has a scheduled meal!",
+                        "Ingredient Not Added",
+                        JOptionPane.ERROR_MESSAGE);
                 System.out.println("meal day exists");
             }
         }
@@ -302,20 +305,20 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
     private boolean mealDayDoesNotExist(MealDays md) {
         for (MealDays mealDay : mealDays) {
-            if (mealDay.getDayOfWeek().equals(md.getDayOfWeek()) && mealDay.getMealName().equals(md.getMealName()) && mealDay.getMealTitle().equals(md.getMealTitle())) {
-              // this meal already exists in the list
+            if (mealDay.getDayOfWeek().equals(md.getDayOfWeek()) && mealDay.getMealName().equals(md.getMealName())) {
+                // this meal already exists in the list
                 return true;
             }
         }
         // passed all the checks - meal does not exist
         return false;
     }
-    
-    
+
+
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         if (mealPlanNameDoesNotExist(mealPlanTitleTextField.getText()) && stringNotEmpty(mealPlanTitleTextField.getText())) {
             // insert the meal plan into the database
-            
+
         }
     }//GEN-LAST:event_submitButtonActionPerformed
 

@@ -208,6 +208,11 @@ public class MealPlanGUI extends javax.swing.JPanel {
         });
 
         deleteMealPlanButton.setText("Delete Plan");
+        deleteMealPlanButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteMealPlanButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout schedulingPanelLayout = new javax.swing.GroupLayout(schedulingPanel);
         schedulingPanel.setLayout(schedulingPanelLayout);
@@ -346,6 +351,10 @@ public class MealPlanGUI extends javax.swing.JPanel {
         ConfigureScheduleGUI configureScheduleGUI = new ConfigureScheduleGUI(frame);
         ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
     }//GEN-LAST:event_configureScheduleButtonActionPerformed
+
+    private void deleteMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteMealPlanButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_deleteMealPlanButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addMealPlanButton;

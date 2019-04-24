@@ -25,6 +25,8 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
     public static DefaultTableModel model = null;  // used for adding/removing rows and editing cells in the schedule table
 
+    public List<String> mealPlans = new ArrayList<String>();
+    
     /**
      * Creates new form MealPlanGUI
      */
@@ -67,7 +69,6 @@ public class MealPlanGUI extends javax.swing.JPanel {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        scheduleTable.getModel().setValueAt("hello\n\thi", 1, 2);
         model = (DefaultTableModel) scheduleTable.getModel();
     }
 
@@ -82,7 +83,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
             if (!rs.next()) {  // No rows returned from the query - hide the combo box, label, and jtable.
                 // Hide the JPanel that encapsulates the scheduleTable
                 schedulingPanel.setVisible(false);
-
+                configureScheduleButton.setVisible(false);
                 // Let the user know there are not any meal plans.
                 messageLabel.setText("You currently do not have any meal plans.");
                 messageLabel.setVisible(true);
@@ -91,6 +92,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
                 // Place all the meal plans in the drop down menu.
                 while (rs.next()) {
                     String name = rs.getString("TITLE");
+                    mealPlans.add(name);
                     mealPlanComboBox.addItem(name);
                 }
 
@@ -328,7 +330,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
     private void editMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMealPlanButtonActionPerformed
         String mealPlanTitle = mealPlanComboBox.getSelectedItem().toString();
-        
+
         // get meals
         List<String> meals = new ArrayList<String>();
         meals = getMeals();
@@ -343,7 +345,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
     private void configureScheduleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureScheduleButtonActionPerformed
         // Show the schedule editor screen.
         JFrame frame = new JFrame("Schedule Editor");
-        ConfigureScheduleGUI configureScheduleGUI = new ConfigureScheduleGUI(frame);
+        ConfigureScheduleGUI configureScheduleGUI = new ConfigureScheduleGUI(frame, mealPlans);
         ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
     }//GEN-LAST:event_configureScheduleButtonActionPerformed
 

@@ -26,7 +26,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
     public static DefaultTableModel model = null;  // used for adding/removing rows and editing cells in the schedule table
 
     public List<String> mealPlans = new ArrayList<String>();
-    
+
     /**
      * Creates new form MealPlanGUI
      */
@@ -90,11 +90,11 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
             } else {
                 // Place all the meal plans in the drop down menu.
-                while (rs.next()) {
-                    String name = rs.getString("TITLE");
+                do {
+                    String name = rs.getString(1);
                     mealPlans.add(name);
                     mealPlanComboBox.addItem(name);
-                }
+                } while (rs.next());
 
                 // -------------------------------------------------------------
                 // ----- Now, find out which meal plan is active this week -----
@@ -126,12 +126,10 @@ public class MealPlanGUI extends javax.swing.JPanel {
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println(e);
                     JOptionPane.showMessageDialog(null, e);
                 }
             }
         } catch (Exception e) {
-            System.out.println(e);
             JOptionPane.showMessageDialog(null, e);
         } finally {
             ConnectDb.close(rs);
@@ -305,7 +303,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);

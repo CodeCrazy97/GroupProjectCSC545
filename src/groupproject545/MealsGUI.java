@@ -210,7 +210,10 @@ public class MealsGUI extends javax.swing.JPanel {
                 addRecipeButton.setVisible(true);
             }
 
+            System.out.println("about to remove items. COunt = " + usedRecipesComboBox.getItemCount());
             usedRecipesComboBox.removeAllItems();
+            System.out.println("removed allitem. COunt = " + usedRecipesComboBox.getItemCount());
+            System.out.println("number of recipes in data structure: " + usedRecipes.size());
             for (int i = 0; i < usedRecipes.size(); i++) {
                 usedRecipesComboBox.addItem(usedRecipes.get(i));
             }

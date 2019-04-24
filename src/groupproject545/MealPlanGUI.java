@@ -284,16 +284,60 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
     }//GEN-LAST:event_mealPlanComboBoxActionPerformed
 
-    private void addMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealPlanButtonActionPerformed
-        // Go to screen where user can add a meal plan.
-        JFrame frame = new JFrame("Adding a Plan");
+    private List<String> getMeals() {
+        List<String> meals = new ArrayList<String>();
+        conn = ConnectDb.setupConnection();
+        try {
+            String sqlStatement = "select * from MEALS order by name";  // Get all meals, sorting by name.
 
-        AddMealPlanGUI addMealPlan = new AddMealPlanGUI(null, frame);
-        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+
+            rs = (OracleResultSet) pst.executeQuery();
+            while (rs.next()) {
+                meals.add(rs.getString(1));
+            }
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
+        }
+        return meals;
+    }
+
+    private void addMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealPlanButtonActionPerformed
+        // First, make sure there are meals to add.
+        List<String> meals = new ArrayList<String>();
+        meals = getMeals();
+
+        if (meals.size() > 0) {
+            // Go to screen where user can add a meal plan.
+            JFrame frame = new JFrame("Adding a Plan");
+
+            AddMealPlanGUI addMealPlan = new AddMealPlanGUI(meals, null, frame);
+            ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
+        } else if (meals.size() == 0) {  // no meals, so don't allow user to create meal plan
+            JOptionPane.showMessageDialog(this,
+                    "No meals to choose from. You must add meals before you can create meal plans.",
+                    "Cannot Create Meal Plan",
+                    JOptionPane.OK_OPTION);
+        }
     }//GEN-LAST:event_addMealPlanButtonActionPerformed
 
     private void editMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMealPlanButtonActionPerformed
-        // Get the title of the currently selected meal plan.
+        String mealPlanTitle = mealPlanComboBox.getSelectedItem().toString();
+        
+        // get meals
+        List<String> meals = new ArrayList<String>();
+        meals = getMeals();
+
+        // Go to screen where user can add a meal plan.
+        JFrame frame = new JFrame("Editing Meal Plan");
+
+        AddMealPlanGUI addMealPlan = new AddMealPlanGUI(meals, mealPlanTitle, frame);
+        ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();  // Close the meal plan screen.
     }//GEN-LAST:event_editMealPlanButtonActionPerformed
 
     private void configureScheduleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureScheduleButtonActionPerformed

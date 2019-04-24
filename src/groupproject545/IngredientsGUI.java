@@ -9,11 +9,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import oracle.jdbc.OracleStatement;
 
 /**
  *
@@ -22,7 +22,7 @@ import javax.swing.JOptionPane;
 public class IngredientsGUI extends javax.swing.JPanel {
 
     Connection conn = null;
-    Statement stmt = null;
+    OracleStatement stmt = null;
     public String oldName = null;  // The old name of a food item (will be used when changing food ingredients names)
     public Ingredients ingredientClass = new Ingredients();
     public List<Ingredients> ingredientsList = new ArrayList<Ingredients>();
@@ -433,7 +433,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
                     + "' where name = '" + oldName + "'";
             
             conn = ConnectDb.setupConnection();
-            stmt = conn.createStatement();
+            stmt = (OracleStatement) conn.createStatement();
             stmt.executeUpdate(sqlUpdateStmt);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);  // Show the exception message.
@@ -461,7 +461,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
                     + "' where name = '" + name + "'";
 
             conn = ConnectDb.setupConnection();
-            stmt = conn.createStatement();
+            stmt = (OracleStatement) conn.createStatement();
             stmt.executeUpdate(sqlUpdateStmt);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);  // Show the exception message.
@@ -478,7 +478,6 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private void insertIntoIngredients(String name, String foodGroup, boolean inStock, String nutritionFacts) {
         // Insert the item into the database.
         try {
-
             // Turn the boolean inStock into a string so it can be inserted into the database.
             String inStockStr = "N";
             if (inStock) {
@@ -487,8 +486,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
             String sqlInsertStmt = "insert into INGREDIENTS values ('" + name + "', '" + foodGroup + "', '" + inStockStr + "', '" + nutritionFacts + "')";
 
             conn = ConnectDb.setupConnection();
-            stmt = conn.createStatement();
-            stmt.executeUpdate(sqlInsertStmt);
+            stmt = (OracleStatement) conn.createStatement();
+            stmt.execute(sqlInsertStmt);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);  // Show the exception message.
         } finally {
@@ -506,7 +505,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
             String sqlDeleteStmt = "delete from INGREDIENTS where name = '" + ingredient + "'";
             System.out.println("sqlDeleteFrom ingredients for = " + sqlDeleteStmt);
             conn = ConnectDb.setupConnection();
-            stmt = conn.createStatement();
+            stmt = (OracleStatement) conn.createStatement();
             stmt.execute(sqlDeleteStmt);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);  // Show the exception message.

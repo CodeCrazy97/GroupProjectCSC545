@@ -9,14 +9,16 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
+import oracle.jdbc.OracleStatement;
 
 /**
  *
@@ -33,14 +35,23 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     // mealDays will hold all the mealDays that need inserted into the database 
     public List<MealDays> mealDays = new ArrayList<MealDays>();
 
-    public PreparedStatement pst = null;
+    // keeps up with the meal plan title being passed to the class (if in edit mode)
+    public String mealPlanTitleOld = null;
+
+    // holds all the meals in the database (used to initialize the combo box of meals
+    public List<String> meals = new ArrayList<String>();
+
+    public OraclePreparedStatement pst = null;
     public Connection conn = null;
     public OracleResultSet rs = null;
+    public OracleStatement stmt = null;
 
     // EDIT_MODE: determines if we are editing an old meal plan or creating a new meal plan
     public final boolean EDIT_MODE;
 
-    public AddMealPlanGUI(String mealPlanTitle, JFrame frame) {
+    public DefaultListModel listModel = new DefaultListModel();
+
+    public AddMealPlanGUI(List<String> meals, String mealPlanTitle, JFrame frame) {
         initComponents();
 
         // Maximize the size of the jframe.
@@ -61,10 +72,18 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         };
         frame.addWindowListener(exitListener);  // Add the custom designed listener.
 
-        if (mealPlanTitle != null) {  // We are editing an old plan.
+        mealsList.setModel(listModel);
+
+        if (mealPlanTitle != null) {  // We are editing an old plan.            
+            mealPlanTitleOld = mealPlanTitle;
             mealPlan = new MealDays(mealPlanTitle);
+            mealPlanTitleTextField.setText(mealPlanTitle);
             EDIT_MODE = true;
             submitButton.setText("Submit Changes");
+
+            // get all meals and days already in the database for this mealplan and place them into the jlist
+            fetchMealDaysForExistingMealPlan(mealPlanTitle);
+            putMealDaysIntoList();
         } else {  // Creating a new plan.
             EDIT_MODE = false;
             submitButton.setText("Submit Meal Plan");
@@ -72,6 +91,51 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
         // NOthing selected by default - so hide modify and delete buttons.
         deleteButton.setVisible(false);
+
+        // get the meals and place them in the meals combo box
+        this.meals = meals;
+        fillMealsComboBox();
+    }
+
+    private void putMealDaysIntoList() {
+        for (int i = 0; i < mealDays.size(); i++) {
+            String mealName = mealDays.get(i).getMealName();
+            String dayOfWeek = mealDays.get(i).getDayOfWeek();
+            String mealTitle = mealDays.get(i).getMealTitle();
+            listModel.addElement(mealTitle + " on " + dayOfWeek + ": " + mealName);
+        }
+    }
+
+    private void fetchMealDaysForExistingMealPlan(String mealPlanTitle) {
+        conn = ConnectDb.setupConnection();
+        try {
+            String sqlStatement = "select * from MEALDAY where mealPlanTitle = '" + mealPlanTitle + "'";  // Get all meal days
+
+            System.out.println("selecting from mealdays:" + sqlStatement);
+            pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+
+            rs = (OracleResultSet) pst.executeQuery();
+            while (rs.next()) {
+                String dayOfWeek = rs.getString(1);
+                String mealTitle = rs.getString(2);
+                String mealName = rs.getString(3);
+                MealDays md = new MealDays(mealTitle, mealName, dayOfWeek);
+                mealDays.add(md);
+            }
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            ConnectDb.close(rs);
+            ConnectDb.close(pst);
+            ConnectDb.close(conn);
+        }
+    }
+
+    private void fillMealsComboBox() {
+        mealNamesComboBox.removeAllItems();
+        for (int i = 0; i < meals.size(); i++) {
+            mealNamesComboBox.addItem(meals.get(i));
+        }
     }
 
     /**
@@ -85,9 +149,9 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
         submitButton = new javax.swing.JButton();
         daysOfWeekComboBox = new javax.swing.JComboBox<>();
-        mealNameTextField = new javax.swing.JTextField();
+        mealTitleTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        mealTitlesComboBox = new javax.swing.JComboBox<>();
+        mealNamesComboBox = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         mealsList = new javax.swing.JList<>();
         jLabel2 = new javax.swing.JLabel();
@@ -107,11 +171,11 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
         daysOfWeekComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }));
 
-        mealNameTextField.setText("Breakfast, brunch, lunch, etc.");
+        mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
 
         jLabel1.setText("Served during:");
 
-        mealTitlesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        mealNamesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         mealsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -125,6 +189,11 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         jLabel3.setText("My Meals in this Plan");
 
         deleteButton.setText("Delete");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
 
         jLabel4.setText("Meal Plan Title:");
 
@@ -149,94 +218,89 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(199, 199, 199)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(199, 199, 199)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(mealTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel4)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(mealPlanTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(mealNamesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(203, 203, 203)
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(256, 256, 256)
-                                .addComponent(daysOfWeekComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(300, 300, 300)
-                                .addComponent(mealNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 116, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(addMealButton)
-                        .addGap(238, 238, 238)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(mealPlanTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(deleteButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(37, 37, 37))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(237, 237, 237)
-                .addComponent(submitButton)
-                .addGap(18, 18, 18)
-                .addComponent(cancelButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(203, 203, 203)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(256, 256, 256)
+                        .addComponent(daysOfWeekComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(300, 300, 300)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(addMealButton)
+                            .addComponent(mealTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 149, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addGap(192, 192, 192))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(66, 66, 66))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(submitButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(cancelButton)
+                        .addGap(399, 399, 399))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(deleteButton)
+                        .addGap(191, 191, 191))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(mealPlanTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(19, 19, 19)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(mealPlanTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(daysOfWeekComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(mealNamesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(mealTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1))
+                        .addGap(18, 18, 18)
+                        .addComponent(addMealButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(57, 57, 57)
+                        .addComponent(jLabel3)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)))
                 .addGap(18, 18, 18)
-                .addComponent(daysOfWeekComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(mealTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(mealNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
-                .addComponent(addMealButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(deleteButton)
+                .addGap(49, 49, 49)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(submitButton))
-                .addGap(22, 22, 22))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(62, 62, 62)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deleteButton)
-                .addContainerGap(73, Short.MAX_VALUE))
+                .addGap(58, 58, 58))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void getMeals() {
-        if (EDIT_MODE) { // get all meals used in this meal plan (if in edit mode) for the selected day of the week
-
-        } else { // get all meals in the database (if creating a new meal plan)
-
-        }
-    }
 
     private void mealsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_mealsListValueChanged
         // Hide modify button if only item is selected.
-        if (mealsList.getSelectedIndices().length >= 1) {  // Allow deletion of one or more meals.
+        if (mealsList.getSelectedIndices().length == 1) {  // Allow deletion of one or more meals.
             deleteButton.setVisible(true);
-        } else {  // Zero items selected - can't delete nothing!
+        } else {  // Zero or more than one items selected
             deleteButton.setVisible(false);
         }
     }//GEN-LAST:event_mealsListValueChanged
@@ -248,15 +312,27 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         return true;
     }
 
-    private boolean mealPlanNameDoesNotExist(String mealPlanTitle) {
+    private boolean mealPlanNameDoesNotExist(String mealPlanTitle, String oldMealPlanTitle) {
+        // If editing a current meal plan, then don't check that that meal plan title already exists (obviously, it does exist - otherwise we wouldn't be editing it)
+        // But, if adding a new meal plan, then make sure that the name doesn't exist.
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from MEALPLANS where title = '" + mealPlanTitle + "'";
+            String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle + "'";
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
             if (rs.next()) {
-                return false;
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
+                if (EDIT_MODE && oldMealPlanTitle.equals(mealPlanTitle)) {  // checked out ok - meal plan title unchanged
+                    return true;
+                } else {  // There are results from the query (otherwise we wouldn't be in this if statement), therefore the meal plan title does exist in the db
+                    return false;
+                }
             } else {
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
                 return true;
             }
 
@@ -284,28 +360,32 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
     private void addMealButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealButtonActionPerformed
         // make sure the meal name is not empty
-        if (stringNotEmpty(mealNameTextField.getText())) {
-            // now make sure that this specific meal title, with this specific meal name, on this specific day does not already exist in the list
-            String mealTitle = mealTitlesComboBox.getSelectedItem().toString();
-            String mealName = mealNameTextField.getText();
+        if (stringNotEmpty(mealTitleTextField.getText())) {
+            // now make sure that this specific meal name, with this specific meal plan, on this specific day does not already exist in the list
+            String mealName = mealNamesComboBox.getSelectedItem().toString();
+            String mealTitle = mealTitleTextField.getText();
             String dayOfWeek = daysOfWeekComboBox.getSelectedItem().toString();
             MealDays md = new MealDays(mealTitle, mealName, dayOfWeek);
             if (!mealDayDoesNotExist(md)) {
                 mealDays.add(md);  // append to the list
-                System.out.println("meal day does not exist");
+                listModel.addElement(mealTitle + " on " + dayOfWeek + ": " + mealName);
             } else {
                 JOptionPane.showMessageDialog(this,
-                        "That meal day for this meal plan already has a scheduled meal!",
-                        "Ingredient Not Added",
+                        "That meal-day for this meal plan already has a scheduled meal!",
+                        "Meal Not Added",
                         JOptionPane.ERROR_MESSAGE);
-                System.out.println("meal day exists");
             }
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Must be served at a specific meal (breakfast, lunch, snack, etc.)",
+                    "Meal Not Added",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_addMealButtonActionPerformed
 
     private boolean mealDayDoesNotExist(MealDays md) {
         for (MealDays mealDay : mealDays) {
-            if (mealDay.getDayOfWeek().equals(md.getDayOfWeek()) && mealDay.getMealName().equals(md.getMealName())) {
+            if (mealDay.getDayOfWeek().equals(md.getDayOfWeek()) && mealDay.getMealTitle().equals(md.getMealTitle())) {
                 // this meal already exists in the list
                 return true;
             }
@@ -316,11 +396,134 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-        if (mealPlanNameDoesNotExist(mealPlanTitleTextField.getText()) && stringNotEmpty(mealPlanTitleTextField.getText())) {
-            // insert the meal plan into the database
+        String mealPlanTitle = mealPlanTitleTextField.getText();
+        System.out.println("mealPlan title = " + mealPlanTitle + ", mealPlanTitleOld = " + mealPlanTitleOld);
+        if (mealPlanNameDoesNotExist(mealPlanTitle, mealPlanTitleOld) && stringNotEmpty(mealPlanTitleTextField.getText())) {
+            if (EDIT_MODE) {
+                // First, delete everything for this meal plan from the mealday table, and reinsert anything added during editing or already present
+                try {
+                    String sqlDeleteStmt = "delete from MEALDAY where mealPlanTitle = '" + mealPlanTitleOld + "'";
+                    System.out.println("delete from mealday:" + sqlDeleteStmt);
+                    conn = ConnectDb.setupConnection();
+                    pst = (OraclePreparedStatement) conn.prepareStatement(sqlDeleteStmt);
+                    pst.execute(sqlDeleteStmt);
+                    System.out.println("done deleting");
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+                } finally {
+                    try {  // Try closing the connection and the statement.
+                        conn.close();
+                        pst.close();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                    }
+                }
 
+                // update the mealplan table
+                try {
+                    String sqlUpdateStmt = "update MEALPLAN set title = '" + mealPlanTitle + "' where title = '" + mealPlanTitleOld + "'";
+                    System.out.println("update: " + sqlUpdateStmt);
+                    conn = ConnectDb.setupConnection();
+                    pst = (OraclePreparedStatement) conn.prepareStatement(sqlUpdateStmt);
+                    pst.executeUpdate();
+                    System.out.println("finished update of meal plan");
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+                } finally {
+                    try {  // Try closing the connection and the statement.
+                        conn.close();
+                        pst.close();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                    }
+                }
+
+                // submit new meal days into the mealday table
+                insertIntoMealDay(mealPlanTitle);
+
+                // done editing - now set the old meal plan title to the one just submitted (do this because user will remain on this screen and can edit it again)
+                mealPlanTitleOld = mealPlanTitle;
+            } else {
+                // first, insert into the MEALPLAN table
+                String title = mealPlanTitleTextField.getText();
+                String nextOccurrence = "1900-01-01";  // default next occurrence date in the past
+                insertIntoMealPlan(title, nextOccurrence);
+
+                // now insert into the MEALDAY table
+                insertIntoMealDay(title);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Check that you have entered a meal plan title and that it does not already exist.",
+                    "Meal Plan Not Added",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void insertIntoMealDay(String mealPlanTitle) {
+        conn = ConnectDb.setupConnection();
+        try {
+            stmt = (OracleStatement) conn.createStatement();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
+        }
+        for (int i = 0; i < mealDays.size(); i++) {
+            try {
+                String sqlInsertStmt = "insert into MEALDAY values ('" + mealDays.get(i).getDayOfWeek() + "', '" + mealDays.get(i).getMealTitle() + "', '" + mealDays.get(i).getMealName() + "', '" + mealPlanTitle + "')";
+                System.out.println("about to insert into mealday : " + sqlInsertStmt);
+
+                stmt.execute(sqlInsertStmt);
+                if (i == mealDays.size() - 1) {  // clean up the textfields and show success if we're not editing (if editing, leave textfields alone)
+                    if (!EDIT_MODE) {
+                        mealPlanTitleTextField.setText("");
+                        // remove all the meals added for this meal plan
+                        listModel.removeAllElements();
+                        mealDays.clear();
+                    }
+                    mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
+
+                    // indicate success
+                    JOptionPane.showMessageDialog(this,
+                            "The new meal plan has been successfully added/changed!",
+                            "Success!",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            }
+        }
+        try {  // Try closing the connection and the statement.
+            conn.close();
+            stmt.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+        }
+    }
+
+    private void insertIntoMealPlan(String title, String nextOccurrence) {
+        try {
+            String sqlInsertStmt = "insert into MEALPLAN values ('" + title + "', to_date('" + nextOccurrence + "', 'YYYY-MM-DD'))";
+            conn = ConnectDb.setupConnection();
+            stmt = (OracleStatement) conn.createStatement();
+            stmt.executeUpdate(sqlInsertStmt);
+            System.out.println("Successfully added the meal plan title.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                conn.close();
+                stmt.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+        int selectedIndex = mealsList.getSelectedIndex();
+        listModel.remove(selectedIndex);
+        mealDays.remove(selectedIndex);
+    }//GEN-LAST:event_deleteButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -333,9 +536,9 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField mealNameTextField;
+    private javax.swing.JComboBox<String> mealNamesComboBox;
     private javax.swing.JTextField mealPlanTitleTextField;
-    private javax.swing.JComboBox<String> mealTitlesComboBox;
+    private javax.swing.JTextField mealTitleTextField;
     private javax.swing.JList<String> mealsList;
     private javax.swing.JButton submitButton;
     // End of variables declaration//GEN-END:variables

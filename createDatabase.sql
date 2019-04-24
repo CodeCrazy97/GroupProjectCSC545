@@ -58,7 +58,7 @@ constraint fk_servedDuringMeal_mealname foreign key (mealName) references meals(
 
 create table mealPlan (
 title varchar(100) primary key,
-nextOccurrence date default to_date('1900-01-01', 'YYYY-MM-DD')   -- Date when the meal plan is scheduled to occur next (default date is in the past, so it is not scheduled to occur unless the user says so)
+nextOccurrence date   -- Date when the meal plan is scheduled to occur next (default date is in the past, so it is not scheduled to occur unless the user says so)
 );
 
 create table mealDay(
@@ -66,7 +66,7 @@ dayOfWeek varchar(9) check (dayOfWeek in ('Sunday', 'Monday', 'Tuesday', 'Wednes
 mealTitle varchar(100),
 mealName varchar(100),
 mealPlanTitle varchar(100),
-primary key (dayOfWeek, mealTitle, mealName),
+primary key (dayOfWeek, mealPlanTitle, mealTitle),
 constraint fk_mealDay_mealname foreign key (mealName) references meals(name) on delete cascade,
 constraint fk_mealDay_mealplantitle foreign key (mealPlanTitle) references mealPlan(title) on delete cascade
 );

@@ -112,7 +112,7 @@ public class MealDays {
      * @throws Exception 
      */
     public static List<MealDays> getByMealName(String name) throws Exception {
-        List<MealDays> mealDaysList = new ArrayList<MealDays>();
+        List<MealDays> mealDaysList = new ArrayList<>();
 
         Connection conn = ConnectDb.setupConnection();
         String sqlStatement = "select * from MealDay where mealName=?";

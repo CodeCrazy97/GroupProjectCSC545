@@ -170,6 +170,16 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         daysOfWeekComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }));
 
         mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
+        mealTitleTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                mealTitleTextFieldFocusLost(evt);
+            }
+        });
+        mealTitleTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                mealTitleTextFieldMouseClicked(evt);
+            }
+        });
 
         jLabel1.setText("Served during:");
 
@@ -520,6 +530,19 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         listModel.remove(selectedIndex);
         mealDays.remove(selectedIndex);
     }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void mealTitleTextFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mealTitleTextFieldMouseClicked
+        // Set the text to null if the user clicks into the text field and nothing has been entered yet.
+        if (mealTitleTextField.getText().equals("Breakfast, brunch, lunch, etc.")) {
+            mealTitleTextField.setText("");
+        }
+    }//GEN-LAST:event_mealTitleTextFieldMouseClicked
+
+    private void mealTitleTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_mealTitleTextFieldFocusLost
+       if (mealTitleTextField.getText().equals("")) {  // reset to default text
+           mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
+       }
+    }//GEN-LAST:event_mealTitleTextFieldFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

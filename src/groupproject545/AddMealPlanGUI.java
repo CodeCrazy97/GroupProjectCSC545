@@ -110,8 +110,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         conn = ConnectDb.setupConnection();
         try {
             String sqlStatement = "select * from MEALDAY where mealPlanTitle = '" + mealPlanTitle + "'";  // Get all meal days
-
-            System.out.println("selecting from mealdays:" + sqlStatement);
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
@@ -343,7 +341,11 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             ConnectDb.close(pst);
             ConnectDb.close(conn);
         }
-        System.out.println("There was a problem checking if the meal plan title exists or not.");
+        JOptionPane.showMessageDialog(this,
+                "There was a problem checking if the meal plan title exists or not.",
+                "Error!",
+                JOptionPane.ERROR_MESSAGE);
+
         return false;
     }
 
@@ -397,17 +399,14 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         String mealPlanTitle = mealPlanTitleTextField.getText();
-        System.out.println("mealPlan title = " + mealPlanTitle + ", mealPlanTitleOld = " + mealPlanTitleOld);
         if (mealPlanNameDoesNotExist(mealPlanTitle, mealPlanTitleOld) && stringNotEmpty(mealPlanTitleTextField.getText())) {
             if (EDIT_MODE) {
                 // First, delete everything for this meal plan from the mealday table, and reinsert anything added during editing or already present
                 try {
                     String sqlDeleteStmt = "delete from MEALDAY where mealPlanTitle = '" + mealPlanTitleOld + "'";
-                    System.out.println("delete from mealday:" + sqlDeleteStmt);
                     conn = ConnectDb.setupConnection();
                     pst = (OraclePreparedStatement) conn.prepareStatement(sqlDeleteStmt);
                     pst.execute(sqlDeleteStmt);
-                    System.out.println("done deleting");
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, e);  // Show the exception message.
                 } finally {
@@ -422,7 +421,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
                 // update the mealplan table
                 try {
                     String sqlUpdateStmt = "update MEALPLAN set title = '" + mealPlanTitle + "' where title = '" + mealPlanTitleOld + "'";
-                    System.out.println("update: " + sqlUpdateStmt);
                     conn = ConnectDb.setupConnection();
                     pst = (OraclePreparedStatement) conn.prepareStatement(sqlUpdateStmt);
                     pst.executeUpdate();
@@ -470,7 +468,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         for (int i = 0; i < mealDays.size(); i++) {
             try {
                 String sqlInsertStmt = "insert into MEALDAY values ('" + mealDays.get(i).getDayOfWeek() + "', '" + mealDays.get(i).getMealTitle() + "', '" + mealDays.get(i).getMealName() + "', '" + mealPlanTitle + "')";
-                System.out.println("about to insert into mealday : " + sqlInsertStmt);
 
                 stmt.execute(sqlInsertStmt);
                 if (i == mealDays.size() - 1) {  // clean up the textfields and show success if we're not editing (if editing, leave textfields alone)
@@ -506,7 +503,6 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
             stmt.executeUpdate(sqlInsertStmt);
-            System.out.println("Successfully added the meal plan title.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);  // Show the exception message.
         } finally {

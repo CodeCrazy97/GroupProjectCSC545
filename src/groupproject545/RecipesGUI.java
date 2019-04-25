@@ -553,31 +553,37 @@ public class RecipesGUI extends javax.swing.JPanel {
     private void deleteRecipeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteRecipeButtonActionPerformed
         // There are two times when this button gets clicked: when the user wants
         // to delete a recipe or when a user wishes to cancel out of edit mode.
+
         if (deleteRecipeButton.getText().equals("Delete Recipe")) {
-            // Remove the recipe from the screen and the database.
-            String title = recipesComboBox.getSelectedItem().toString();
-            try {
-                // First, delete from CALLSFOR.
-                String sqlDeleteStmt = "delete from RECIPES where title = '" + title + "'";
+            if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete recipe(This is permanent)?", "Confirm",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                // yes option
 
-                conn = ConnectDb.setupConnection();
-                stmt = conn.createStatement();
-                stmt.executeUpdate(sqlDeleteStmt);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
-            } finally {
-                try {  // Try closing the connection and the statement.
-                    conn.close();
-                    stmt.close();
+                // Remove the recipe from the screen and the database.
+                String title = recipesComboBox.getSelectedItem().toString();
+                try {
+                    // First, delete from CALLSFOR.
+                    String sqlDeleteStmt = "delete from RECIPES where title = '" + title + "'";
+
+                    conn = ConnectDb.setupConnection();
+                    stmt = conn.createStatement();
+                    stmt.executeUpdate(sqlDeleteStmt);
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+                } finally {
+                    try {  // Try closing the connection and the statement.
+                        conn.close();
+                        stmt.close();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                    }
                 }
-            }
 
-            recipesComboBox.removeItemAt(recipesComboBox.getSelectedIndex());
-            if (recipesComboBox.getItemCount() == 0) {  // NOthing to delete/edit.
-                deleteRecipeButton.setVisible(false);
-                editRecipeButton.setVisible(false);
+                recipesComboBox.removeItemAt(recipesComboBox.getSelectedIndex());
+                if (recipesComboBox.getItemCount() == 0) {  // NOthing to delete/edit.
+                    deleteRecipeButton.setVisible(false);
+                    editRecipeButton.setVisible(false);
+                }
             }
         } else {
 
@@ -597,6 +603,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             editRecipeButton.setText("Edit Recipe");
             editRecipeButton.setVisible(true);
         }
+
     }//GEN-LAST:event_deleteRecipeButtonActionPerformed
 
     private void editRecipeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editRecipeButtonActionPerformed
@@ -818,10 +825,10 @@ public class RecipesGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_removeIngredientButtonActionPerformed
 
     private void showFilteredRecipes(String ingredient, String category) {
-        
+
         // clean out the text area
         filteredRecipesTextArea.setText("");
-        
+
         List<String> recipesFilteredByIngredient = new ArrayList<String>();
         List<String> recipesFilteredByCategory = new ArrayList<String>();
 

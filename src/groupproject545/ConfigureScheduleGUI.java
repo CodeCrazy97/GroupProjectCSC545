@@ -10,15 +10,22 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
 import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
+import oracle.jdbc.OracleStatement;
 
 /**
  *
@@ -36,6 +43,32 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
     public ConfigureScheduleGUI(JFrame frame, List<String> mealPlanTitles) {
         initComponents();
 
+        /*
+
+SQL> insert into mealPlan values ('mp2', to_date('2019-03-21', 'yyyy-mm-dd'));
+
+1 row created.
+
+SQL>
+        
+        // get today and clear time of day
+Calendar cal = Calendar.getInstance();
+cal.set(Calendar.HOUR_OF_DAY, 0); // ! clear would not reset the hour of day !
+cal.clear(Calendar.MINUTE);
+cal.clear(Calendar.SECOND);
+cal.clear(Calendar.MILLISECOND);
+
+// get start of this week in milliseconds
+cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+System.out.println("Start of this week:       " + cal.getTime());
+System.out.println("... in milliseconds:      " + cal.getTimeInMillis());
+
+// start of the next week
+cal.add(Calendar.WEEK_OF_YEAR, 1);
+System.out.println("Start of the next week:   " + cal.getTime());
+System.out.println("... in milliseconds:      " + cal.getTimeInMillis());
+        
+         */
         // Create the JFrame for this window.
         frame.add(this);
         frame.pack();
@@ -94,6 +127,11 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         nextWeekForMealPlanLabel.setText("This meal plan is scheduled for the week of: 4/21/2019 - 4/28/2019.");
 
         submitChangesButton.setText("Submit Changes");
+        submitChangesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitChangesButtonActionPerformed(evt);
+            }
+        });
 
         cancelButton.setText("Cancel");
 
@@ -140,9 +178,9 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
                                 .addComponent(jLabel1)))
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(267, 267, 267)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 279, Short.MAX_VALUE)
                         .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
+                        .addGap(140, 140, 140)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jLabel3)
@@ -154,17 +192,14 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(34, 34, 34)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(57, 57, 57))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jRadioButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)
-                        .addGap(43, 43, 43)))
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(43, 43, 43)
                 .addComponent(nextWeekForMealPlanLabel)
                 .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -216,6 +251,29 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_mealPlanTitlesComboBoxActionPerformed
+
+    private void submitChangesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitChangesButtonActionPerformed
+
+        // get the date, turn it into MM/DD/YYYY format
+        // add changes to database
+        try {
+            String nextOccurrence = "";
+            String sqlUpdateStmt = "update MEALPLAN set nextOccurrence = '" + nextOccurrence + "'";
+
+            conn = ConnectDb.setupConnection();
+            pst = (OraclePreparedStatement) conn.createStatement();
+            pst.executeUpdate(sqlUpdateStmt);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                ConnectDb.close(conn);
+                ConnectDb.close(pst);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }//GEN-LAST:event_submitChangesButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -180,6 +180,11 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
                 mealTitleTextFieldMouseClicked(evt);
             }
         });
+        mealTitleTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mealTitleTextFieldActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Served during:");
 
@@ -543,6 +548,10 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
            mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
        }
     }//GEN-LAST:event_mealTitleTextFieldFocusLost
+
+    private void mealTitleTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealTitleTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mealTitleTextFieldActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

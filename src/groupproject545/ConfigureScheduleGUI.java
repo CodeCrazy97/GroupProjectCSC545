@@ -8,19 +8,27 @@ package groupproject545;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.sql.Connection;
 import java.text.DateFormat;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleResultSet;
 
 /**
  *
  * @author Ethan_2
  */
 public class ConfigureScheduleGUI extends javax.swing.JPanel {
+
+    public OraclePreparedStatement pst = null;
+    public OracleResultSet rs = null;
+    public Connection conn = null;
 
     /**
      * Creates new form ConfigureScheduleGUI
@@ -72,23 +80,26 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         buttonGroup8 = new javax.swing.ButtonGroup();
         buttonGroup9 = new javax.swing.ButtonGroup();
         nextWeekForMealPlanLabel = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        submitChangesButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        nextOccurrenceTextField = new javax.swing.JTextField();
         mealPlanTitlesComboBox = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
+        jRadioButton2 = new javax.swing.JRadioButton();
+        jLabel3 = new javax.swing.JLabel();
 
         jRadioButton1.setText("jRadioButton1");
 
         nextWeekForMealPlanLabel.setText("This meal plan is scheduled for the week of: 4/21/2019 - 4/28/2019.");
 
-        jButton1.setText("Submit Changes");
+        submitChangesButton.setText("Submit Changes");
 
-        jButton2.setText("Cancel");
+        cancelButton.setText("Cancel");
 
-        jLabel2.setText("Enter a new week for this meal plan's next occurrence (MM/DD/YYYY):");
+        jLabel2.setText("Enter a day during the week that you would like this meal plan to occur during:");
 
-        jTextField1.setText("4/21/2019");
+        nextOccurrenceTextField.setText("4/21/2019");
 
         mealPlanTitlesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         mealPlanTitlesComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -97,54 +108,113 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText("(Entering any day during that week will work.)");
+
+        jRadioButton2.setText("Set meal plan schedule to automatic");
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
+        jLabel3.setText("What is this?");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(88, 88, 88)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(72, 72, 72)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(nextWeekForMealPlanLabel)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel2)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(27, 27, 27)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(240, 240, 240)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(103, 103, 103)
-                                    .addComponent(nextWeekForMealPlanLabel)))))
+                                .addGap(267, 267, 267)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(submitChangesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(219, 219, 219)
+                                .addComponent(jLabel1)))
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(339, 339, 339)
-                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(174, Short.MAX_VALUE))
+                        .addGap(267, 267, 267)
+                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addGap(165, 165, 165))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jRadioButton2)
+                                .addGap(90, 90, 90))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(123, Short.MAX_VALUE)
-                .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(57, 57, 57)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(41, 41, 41)
+                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(57, 57, 57))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jRadioButton2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3)
+                        .addGap(43, 43, 43)))
                 .addComponent(nextWeekForMealPlanLabel)
                 .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(32, 32, 32)
-                .addComponent(jButton1)
+                    .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton2)
-                .addGap(76, 76, 76))
+                .addComponent(jLabel1)
+                .addGap(46, 46, 46)
+                .addComponent(submitChangesButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cancelButton)
+                .addContainerGap(58, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void mealPlanTitlesComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealPlanTitlesComboBoxActionPerformed
-        // TODO add your handling code here:
+        if (mealPlanTitlesComboBox.getItemCount() > 0) {
+            // Get the time frame for when this meal plan is scheduled to occur.
+            conn = ConnectDb.setupConnection();
+            String mealPlanTitle = mealPlanTitlesComboBox.getSelectedItem().toString();
+            try {
+                String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle + "'";
+                pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
+                rs = (OracleResultSet) pst.executeQuery();
+                if (rs.next()) {
+                    String nextOccurrence = rs.getString(2);
+                    System.out.println("next occurrence = " + nextOccurrence);
+                    String date = null;
+                    try {
+                        date = nextOccurrence.substring(5, 7) + "/"
+                                + nextOccurrence.substring(8, 10) + "/" + nextOccurrence.substring(0, 4);
+                    } catch (Exception ex) {
+                        System.out.println("Problem converting sql date to MM/DD/YYYY format.");
+                        JOptionPane.showMessageDialog(null, ex);
+                    }
+                    System.out.println("date: " + date);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Problem calling rs.getString(1). Contact IT support.",
+                            "Error!",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            } finally {
+                ConnectDb.close(rs);
+                ConnectDb.close(pst);
+                ConnectDb.close(conn);
+            }
+        }
     }//GEN-LAST:event_mealPlanTitlesComboBoxActionPerformed
 
 
@@ -158,12 +228,15 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup7;
     private javax.swing.ButtonGroup buttonGroup8;
     private javax.swing.ButtonGroup buttonGroup9;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JComboBox<String> mealPlanTitlesComboBox;
+    private javax.swing.JTextField nextOccurrenceTextField;
     private javax.swing.JLabel nextWeekForMealPlanLabel;
+    private javax.swing.JButton submitChangesButton;
     // End of variables declaration//GEN-END:variables
 }

@@ -3,6 +3,7 @@ package groupproject545;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import oracle.jdbc.*;
 
 /*
@@ -10,6 +11,48 @@ Class to hold all the meals served on certain days (Sunday, Monday, etc.) during
 certain meals (breakfast, brunch, lunch, etc.) for a specified meal plan.
  */
 public class MealDays {
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 41 * hash + Objects.hashCode(this.mealPlanTitle);
+        hash = 41 * hash + Objects.hashCode(this.mealName);
+        hash = 41 * hash + Objects.hashCode(this.mealTitle);
+        hash = 41 * hash + Objects.hashCode(this.dayOfWeek);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MealDays other = (MealDays) obj;
+        if (!Objects.equals(this.mealPlanTitle, other.mealPlanTitle)) {
+            return false;
+        }
+        if (!Objects.equals(this.mealName, other.mealName)) {
+            return false;
+        }
+        if (!Objects.equals(this.mealTitle, other.mealTitle)) {
+            return false;
+        }
+        if (!Objects.equals(this.dayOfWeek, other.dayOfWeek)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "MealDays{" + "mealPlanTitle=" + mealPlanTitle + ", mealName=" + mealName + ", mealTitle=" + mealTitle + ", dayOfWeek=" + dayOfWeek + '}';
+    }
 
     private String mealPlanTitle;
     

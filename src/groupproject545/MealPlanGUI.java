@@ -8,8 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 
@@ -26,6 +28,8 @@ public class MealPlanGUI extends javax.swing.JPanel {
     public static DefaultTableModel model = null;  // used for adding/removing rows and editing cells in the schedule table
 
     public List<String> mealPlans = new ArrayList<String>();
+    public List<MealDays> mealDays = new ArrayList<>();
+    TableModel mealTableModel = null;
 
     /**
      * Creates new form MealPlanGUI
@@ -286,9 +290,45 @@ public class MealPlanGUI extends javax.swing.JPanel {
 
     private void mealPlanComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealPlanComboBoxActionPerformed
         // Show the newly selected meal plan.
-
+        int selectedIndex = mealPlanComboBox.getSelectedIndex();
+        String mealPlanName = mealPlans.get(selectedIndex);
+        try {
+            mealDays = MealDays.getByMealPlanTitle(mealPlanName);
+            displayMeals();
+        }
+        catch (Exception ex) {
+            System.out.println(ex);
+        }
+        
     }//GEN-LAST:event_mealPlanComboBoxActionPerformed
-
+    
+    private void displayMeals() {
+        String[] daysOfWeek = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+        List<String[]> data = new ArrayList<String[]>();  
+        // for each day of the week
+        for (int i = 0; i < daysOfWeek.length; i++) {
+            // sets the working row
+            int row = 0;
+            for (MealDays mealDay : mealDays) {
+                // if day of week matches
+                if (daysOfWeek[i].equals(mealDay.getDayOfWeek())) {
+                    // if a row needs to be added
+                    if (row == data.size())
+                       data.add(new String[7]); // add row
+                    // set row values
+                    data.get(row)[i] = mealDay.getMealTitle() + " " + mealDay.getMealName();
+//                    scheduleTable.getModel().setValueAt(data.get(row)[i], row, i);
+                    System.out.println(data.get(row)[i]);
+                    row++;
+                } 
+            }
+        }
+        // create a table model with the new values
+        mealTableModel = new DefaultTableModel(data.toArray(new String[0][]), daysOfWeek);
+        scheduleTable.setModel(mealTableModel);
+        
+    }
+    
     private List<String> getMeals() {
         List<String> meals = new ArrayList<String>();
         conn = ConnectDb.setupConnection();
@@ -311,6 +351,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
         }
         return meals;
     }
+    
 
     private void addMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealPlanButtonActionPerformed
         // First, make sure there are meals to add.

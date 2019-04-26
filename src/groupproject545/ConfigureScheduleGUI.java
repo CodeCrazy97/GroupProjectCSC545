@@ -10,15 +10,19 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
+import oracle.jdbc.OracleStatement;
+import sun.util.locale.LocaleUtils;
 
 /**
  *
@@ -26,6 +30,7 @@ import oracle.jdbc.OracleResultSet;
  */
 public class ConfigureScheduleGUI extends javax.swing.JPanel {
 
+    public OracleStatement stmt = null;
     public OraclePreparedStatement pst = null;
     public OracleResultSet rs = null;
     public Connection conn = null;
@@ -79,25 +84,25 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         buttonGroup7 = new javax.swing.ButtonGroup();
         buttonGroup8 = new javax.swing.ButtonGroup();
         buttonGroup9 = new javax.swing.ButtonGroup();
-        nextWeekForMealPlanLabel = new javax.swing.JLabel();
         submitChangesButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
         nextOccurrenceTextField = new javax.swing.JTextField();
         mealPlanTitlesComboBox = new javax.swing.JComboBox<>();
-        jLabel1 = new javax.swing.JLabel();
         jRadioButton2 = new javax.swing.JRadioButton();
         jLabel3 = new javax.swing.JLabel();
+        dateInfoLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         jRadioButton1.setText("jRadioButton1");
 
-        nextWeekForMealPlanLabel.setText("This meal plan is scheduled for the week of: 4/21/2019 - 4/28/2019.");
-
         submitChangesButton.setText("Submit Changes");
+        submitChangesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitChangesButtonActionPerformed(evt);
+            }
+        });
 
         cancelButton.setText("Cancel");
-
-        jLabel2.setText("Enter a day during the week that you would like this meal plan to occur during:");
 
         nextOccurrenceTextField.setText("4/21/2019");
 
@@ -108,75 +113,78 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("(Entering any day during that week will work.)");
-
         jRadioButton2.setText("Set meal plan schedule to automatic");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
         jLabel3.setText("What is this?");
+        jLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 204, 255)));
+        jLabel3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel3MouseClicked(evt);
+            }
+        });
+
+        dateInfoLabel.setText("This meal plan is scheduled for the week of:");
+
+        jLabel2.setText("Dates must be entered EXACTLY in the format of MM/DD/YYYY.");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(88, 88, 88)
+                .addGap(355, 355, 355)
+                .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addGap(165, 165, 165))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jRadioButton2)
+                        .addGap(90, 90, 90))))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(nextWeekForMealPlanLabel)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(267, 267, 267)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(submitChangesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(219, 219, 219)
-                                .addComponent(jLabel1)))
-                        .addContainerGap())
+                        .addGap(355, 355, 355)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(submitChangesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(267, 267, 267)
-                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addGap(165, 165, 165))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jRadioButton2)
-                                .addGap(90, 90, 90))))))
+                        .addGap(194, 194, 194)
+                        .addComponent(dateInfoLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(242, 242, 242)
+                .addComponent(jLabel2)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(57, 57, 57))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jRadioButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel3)
-                        .addGap(43, 43, 43)))
-                .addComponent(nextWeekForMealPlanLabel)
-                .addGap(33, 33, 33)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel1)
-                .addGap(46, 46, 46)
+                        .addGap(134, 134, 134))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(41, 41, 41)
+                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 122, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dateInfoLabel))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addGap(32, 32, 32)
                 .addComponent(submitChangesButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cancelButton)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -186,21 +194,21 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             conn = ConnectDb.setupConnection();
             String mealPlanTitle = mealPlanTitlesComboBox.getSelectedItem().toString();
             try {
+                mealPlanTitle = mealPlanTitle.replace("'", "''");
                 String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle + "'";
+
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
                 rs = (OracleResultSet) pst.executeQuery();
                 if (rs.next()) {
-                    String nextOccurrence = rs.getString(2);
-                    System.out.println("next occurrence = " + nextOccurrence);
-                    String date = null;
-                    try {
-                        date = nextOccurrence.substring(5, 7) + "/"
-                                + nextOccurrence.substring(8, 10) + "/" + nextOccurrence.substring(0, 4);
-                    } catch (Exception ex) {
-                        System.out.println("Problem converting sql date to MM/DD/YYYY format.");
-                        JOptionPane.showMessageDialog(null, ex);
+                    Date nextOccurrence = rs.getDate(2);
+                    if (isDateInPast(nextOccurrence)) {  // default date - don't show the date. Instead tell user it is not scheduled.
+                        nextOccurrenceTextField.setText("");
+                            
+                        dateInfoLabel.setText("This meal plan is not scheduled! Enter a date during the week you would like it to be scheduled for.");
+                    } else {  // Place the date in the combo box.
+                        nextOccurrenceTextField.setText(getMMDDYYYYFromDate(nextOccurrence.toString()));
+                        dateInfoLabel.setText("This meal plan is scheduled for the week of:");
                     }
-                    System.out.println("date: " + date);
                 } else {
                     JOptionPane.showMessageDialog(this,
                             "Problem calling rs.getString(1). Contact IT support.",
@@ -217,6 +225,117 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_mealPlanTitlesComboBoxActionPerformed
 
+    public boolean isDateInPast(Date d) {
+        Date current = getFirstDayOfWeek();
+
+        //compare d and current dates
+        if (d.before(current)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public String getMMDDYYYYFromDate(String sqlDate) {
+        String strDate = "";
+        // convert the date to mm/dd/yyyy below
+        try {
+            strDate += sqlDate.substring(5, 7) + "/"
+                    + sqlDate.substring(8, 10) + "/" + sqlDate.substring(0, 4);
+        } catch (Exception ex) {
+            System.out.println("Problem converting sql date to MM/DD/YYYY format.");
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        return strDate;
+    }
+
+    private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
+
+    }//GEN-LAST:event_jLabel3MouseClicked
+
+    private String toSqlDateFormat(String s) {
+        String sql = null;
+        try {
+            sql = s.substring(6) + "-" + s.substring(0, 2) + "-" + s.substring(3, 5);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Check the date you entered and make sure it is of the correct format (MM/DD/YYYY).",
+                    "Update Failed",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        System.out.println("to sql format:" + sql);
+        return sql;
+    }
+
+    private void submitChangesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitChangesButtonActionPerformed
+        // Try inserting the user's date format into the database.
+        String date = nextOccurrenceTextField.getText();
+        try {
+            // Get the first day of the week specified.
+            String sqlUpdateStmt = "update MEALPLAN set nextOccurrence = (select trunc('" + date
+                    + "', 'IW') from_date, next_day(trunc(sysdate,'IW'),'SUNDAY') to_date from dual)"
+                    + " where title = '" + mealPlanTitlesComboBox.getSelectedItem() + "'";
+
+            conn = ConnectDb.setupConnection();
+            stmt = (OracleStatement) conn.createStatement();
+            stmt.executeUpdate(sqlUpdateStmt);
+            JOptionPane.showMessageDialog(this,
+                    "Update successful!",
+                    "Update Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+        } finally {
+            try {  // Try closing the connection and the statement.
+                ConnectDb.close(conn);
+                ConnectDb.close(stmt);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+            }
+        }
+    }//GEN-LAST:event_submitChangesButtonActionPerformed
+
+    public Date getFirstDayOfWeek(Date d) {
+        Calendar cal = toCalendar(d);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.clear(Calendar.MINUTE);
+        cal.clear(Calendar.SECOND);
+        cal.clear(Calendar.MILLISECOND);
+
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+
+        System.out.println(cal.getTime());
+        return cal.getTime();
+    }
+
+    public Date getFirstDayOfWeek() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.clear(Calendar.MINUTE);
+        cal.clear(Calendar.SECOND);
+        cal.clear(Calendar.MILLISECOND);
+
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+
+        return cal.getTime();
+    }
+
+    public Calendar toCalendar(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+
+    public boolean isDateInCurrentWeek(Date date) {
+        Calendar currentCalendar = Calendar.getInstance();
+        int week = currentCalendar.get(Calendar.WEEK_OF_YEAR);
+        int year = currentCalendar.get(Calendar.YEAR);
+        Calendar targetCalendar = Calendar.getInstance();
+        targetCalendar.setTime(date);
+        int targetWeek = targetCalendar.get(Calendar.WEEK_OF_YEAR);
+        int targetYear = targetCalendar.get(Calendar.YEAR);
+        return week == targetWeek && year == targetYear;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
@@ -229,14 +348,13 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup8;
     private javax.swing.ButtonGroup buttonGroup9;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel dateInfoLabel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JComboBox<String> mealPlanTitlesComboBox;
     private javax.swing.JTextField nextOccurrenceTextField;
-    private javax.swing.JLabel nextWeekForMealPlanLabel;
     private javax.swing.JButton submitChangesButton;
     // End of variables declaration//GEN-END:variables
 }

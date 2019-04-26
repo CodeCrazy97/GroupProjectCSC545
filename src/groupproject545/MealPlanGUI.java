@@ -96,6 +96,8 @@ public class MealPlanGUI extends javax.swing.JPanel {
                     mealPlanComboBox.addItem(name);
                 } while (rs.next());
 
+                
+                /*
                 // -------------------------------------------------------------
                 // ----- Now, find out which meal plan is active this week -----
                 // (We already know there are meal plans in the database if the code got to this point.)
@@ -128,6 +130,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, e);
                 }
+                */
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);

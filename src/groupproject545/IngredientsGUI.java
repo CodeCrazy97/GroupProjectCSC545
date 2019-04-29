@@ -293,8 +293,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
             oldName = ingredientNameTextField.getText();  // Store the item's old name.
             ingredientsComboBox.setVisible(false);
         } else // Change to "Edit Ingredient".
-        {
-            if (ingredientIsNotEmpty(ingredientNameTextField.getText()) && ingredientDoesNotAlreadyExist(true, ingredientNameTextField.getText())) {  // Before submitting changes to the database, validate the ingredient (make sure it's name is not null and that there is not already an ingredient with that name).
+         if (ingredientIsNotEmpty(ingredientNameTextField.getText()) && ingredientDoesNotAlreadyExist(true, ingredientNameTextField.getText())) {  // Before submitting changes to the database, validate the ingredient (make sure it's name is not null and that there is not already an ingredient with that name).
                 // Capture modifications before removing the item (remember: removing items from combo box will cause the ingredientsComboBoxActionPerformed method to be called, as a new item will automatically be selected)
                 String name = ingredientNameTextField.getText();
                 String foodGroup = foodGroupTextField.getText();
@@ -302,7 +301,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 String nutritionFacts = nutritionFactsTextArea.getText();
                 Ingredients ingredient = new Ingredients(name, foodGroup, inStock, nutritionFacts);
 
-                System.out.println("old name = " + ingredientsComboBox.getSelectedItem().toString() + ", new name = " + name);
+                
                 String oldName = ingredientsComboBox.getSelectedItem().toString();
                 if (oldName.equals(name)) {  // Old and new names are equal. Don't try inserting into Ingredients and CallsFor tables.
                     updateIngredientsNoNameChange(name, foodGroup, inStock, nutritionFacts);
@@ -332,7 +331,6 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 // Select the edited item.
                 ingredientsComboBox.setSelectedIndex(0);
             }
-        }
     }//GEN-LAST:event_submitChangesButtonActionPerformed
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
 
@@ -355,7 +353,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
             foodGroupTextField.setEditable(true);
             inStockCheckBox.setEnabled(true);
         } else // Do opposite of if condition. Try to add ingredient to screen and database.
-         if (ingredientIsNotEmpty(ingredientNameTextField.getText()) && ingredientDoesNotAlreadyExist(false, ingredientNameTextField.getText())) {  // Before submitting changes to the database, validate the ingredient (make sure it's name is not null and that there is not already an ingredient with that name).            
+        {
+            if (ingredientIsNotEmpty(ingredientNameTextField.getText()) && ingredientDoesNotAlreadyExist(false, ingredientNameTextField.getText())) {  // Before submitting changes to the database, validate the ingredient (make sure it's name is not null and that there is not already an ingredient with that name).            
                 String name = ingredientNameTextField.getText();
                 String foodGroup = foodGroupTextField.getText();
                 boolean inStock = inStockCheckBox.getState();
@@ -384,6 +383,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 deleteIngredientButton.setVisible(true);
                 submitChangesButton.setVisible(true);
             }
+        }
         // null out name text field (so this ingredient's name won't appear there later)
         ingredientNameTextField.setText("");
     }//GEN-LAST:event_addNewIngredientButtonActionPerformed
@@ -405,7 +405,9 @@ public class IngredientsGUI extends javax.swing.JPanel {
 
             // Select first ingredient.
             ingredientsComboBox.setSelectedIndex(0);
-        } else {
+        } else if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete ingredient?", "Confirm",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            // yes option
             // Remove ingredient from screen and database.
             // Delete from db.
             deleteFromIngredients(ingredientsComboBox.getSelectedItem().toString());
@@ -427,10 +429,10 @@ public class IngredientsGUI extends javax.swing.JPanel {
             if (inStock) {
                 inStockStr = "Y";
             }
-            String sqlUpdateStmt = "update INGREDIENTS set name = '" + name + "', "
-                    + " foodGroup = '" + foodGroup + "', inStock = '" + inStockStr
-                    + "', nutritionFacts = '" + nutritionFacts
-                    + "' where name = '" + oldName + "'";
+            String sqlUpdateStmt = "update INGREDIENTS set name = '" + name.replace("'", "''") + "', "
+                    + " foodGroup = '" + foodGroup.replace("'", "''") + "', inStock = '" + inStockStr
+                    + "', nutritionFacts = '" + nutritionFacts.replace("'", "''")
+                    + "' where name = '" + oldName.replace("'", "''") + "'";
 
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
@@ -456,9 +458,9 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 inStockStr = "Y";
             }
             String sqlUpdateStmt = "update INGREDIENTS set "
-                    + " foodGroup = '" + foodGroup + "', inStock = '" + inStockStr
-                    + "', nutritionFacts = '" + nutritionFacts
-                    + "' where name = '" + name + "'";
+                    + " foodGroup = '" + foodGroup.replace("'", "''") + "', inStock = '" + inStockStr
+                    + "', nutritionFacts = '" + nutritionFacts.replace("'", "''")
+                    + "' where name = '" + name.replace("'", "''") + "'";
 
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
@@ -483,7 +485,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
             if (inStock) {
                 inStockStr = "Y";
             }
-            String sqlInsertStmt = "insert into INGREDIENTS values ('" + name + "', '" + foodGroup + "', '" + inStockStr + "', '" + nutritionFacts + "')";
+            String sqlInsertStmt = "insert into INGREDIENTS values ('" + name.replace("'", "''") + "', '" + foodGroup.replace("'", "''") + "', '" + inStockStr + "', '" + nutritionFacts.replace("'", "''") + "')";
 
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
@@ -502,8 +504,8 @@ public class IngredientsGUI extends javax.swing.JPanel {
 
     private void deleteFromIngredients(String ingredient) {
         try {
-            String sqlDeleteStmt = "delete from INGREDIENTS where name = '" + ingredient + "'";
-            System.out.println("sqlDeleteFrom ingredients for = " + sqlDeleteStmt);
+            String sqlDeleteStmt = "delete from INGREDIENTS where name = '" + ingredient.replace("'", "''") + "'";
+            
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
             stmt.execute(sqlDeleteStmt);

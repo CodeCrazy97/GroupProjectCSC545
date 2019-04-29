@@ -109,7 +109,7 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     private void fetchMealDaysForExistingMealPlan(String mealPlanTitle) {
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from MEALDAY where mealPlanTitle = '" + mealPlanTitle + "'";  // Get all meal days
+            String sqlStatement = "select * from MEALDAY where mealPlanTitle = '" + mealPlanTitle.replace("'", "''") + "'";  // Get all meal days
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
@@ -121,7 +121,7 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
                 mealDays.add(md);
             }
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -330,7 +330,7 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         // But, if adding a new meal plan, then make sure that the name doesn't exist.
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle + "'";
+            String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle.replace("'", "''") + "'";
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
             if (rs.next()) {
@@ -350,7 +350,7 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -418,7 +418,7 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
             if (EDIT_MODE) {
                 // First, delete everything for this meal plan from the mealday table, and reinsert anything added during editing or already present
                 try {
-                    String sqlDeleteStmt = "delete from MEALDAY where mealPlanTitle = '" + mealPlanTitleOld + "'";
+                    String sqlDeleteStmt = "delete from MEALDAY where mealPlanTitle = '" + mealPlanTitleOld.replace("'", "''") + "'";
                     conn = ConnectDb.setupConnection();
                     pst = (OraclePreparedStatement) conn.prepareStatement(sqlDeleteStmt);
                     pst.execute(sqlDeleteStmt);
@@ -435,11 +435,10 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
                 // update the mealplan table
                 try {
-                    String sqlUpdateStmt = "update MEALPLAN set title = '" + mealPlanTitle + "' where title = '" + mealPlanTitleOld + "'";
+                    String sqlUpdateStmt = "update MEALPLAN set title = '" + mealPlanTitle.replace("'", "''") + "' where title = '" + mealPlanTitleOld.replace("'", "''") + "'";
                     conn = ConnectDb.setupConnection();
                     pst = (OraclePreparedStatement) conn.prepareStatement(sqlUpdateStmt);
                     pst.executeUpdate();
-                    System.out.println("finished update of meal plan");
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, e);  // Show the exception message.
                 } finally {
@@ -482,7 +481,11 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
         }
         for (int i = 0; i < mealDays.size(); i++) {
             try {
-                String sqlInsertStmt = "insert into MEALDAY values ('" + mealDays.get(i).getDayOfWeek() + "', '" + mealDays.get(i).getMealTitle() + "', '" + mealDays.get(i).getMealName() + "', '" + mealPlanTitle + "')";
+                String sqlInsertStmt = "insert into MEALDAY values ('"
+                        + mealDays.get(i).getDayOfWeek() + "', '"
+                        + mealDays.get(i).getMealTitle().replace("'", "''") + "', '"
+                        + mealDays.get(i).getMealName().replace("'", "''") + "', '"
+                        + mealPlanTitle.replace("'", "''") + "')";
 
                 stmt.execute(sqlInsertStmt);
                 if (i == mealDays.size() - 1) {  // clean up the textfields and show success if we're not editing (if editing, leave textfields alone)
@@ -514,7 +517,8 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
 
     private void insertIntoMealPlan(String title, String nextOccurrence) {
         try {
-            String sqlInsertStmt = "insert into MEALPLAN values ('" + title + "', to_date('" + nextOccurrence + "', 'YYYY-MM-DD'))";
+            String sqlInsertStmt = "insert into MEALPLAN values ('" + title.replace("'", "''")
+                    + "', to_date('" + nextOccurrence + "', 'YYYY-MM-DD'))";
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
             stmt.executeUpdate(sqlInsertStmt);
@@ -544,9 +548,9 @@ public class AddMealPlanGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_mealTitleTextFieldMouseClicked
 
     private void mealTitleTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_mealTitleTextFieldFocusLost
-       if (mealTitleTextField.getText().equals("")) {  // reset to default text
-           mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
-       }
+        if (mealTitleTextField.getText().equals("")) {  // reset to default text
+            mealTitleTextField.setText("Breakfast, brunch, lunch, etc.");
+        }
     }//GEN-LAST:event_mealTitleTextFieldFocusLost
 
     private void mealTitleTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealTitleTextFieldActionPerformed

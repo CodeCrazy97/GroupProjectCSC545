@@ -99,7 +99,7 @@ public class MealsGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -113,19 +113,19 @@ public class MealsGUI extends javax.swing.JPanel {
 
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from SERVEDDURINGMEAL where mealName = '" + meal + "' order by recipeTitle";  // Get all recipes served in this meal.
+            String sqlStatement = "select * from SERVEDDURINGMEAL where mealName = '" + meal.replace("'", "''") + "' order by recipeTitle";  // Get all recipes served in this meal.
 
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
                 String recipeTitle = rs.getString(1);
-                System.out.println("new used recipe for " + meal + " : " + recipeTitle);
+                
                 usedRecipes.add(recipeTitle);
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -140,20 +140,20 @@ public class MealsGUI extends javax.swing.JPanel {
         conn = ConnectDb.setupConnection();
         try {
             String sqlStatement = "select * from RECIPES where title <> all(select "
-                    + "recipeTitle from SERVEDDURINGMEAL where mealName = '" + meal + "')";  // Get all recipes not served in this meal.
+                    + "recipeTitle from SERVEDDURINGMEAL where mealName = '" + meal.replace("'", "''") + "')";  // Get all recipes not served in this meal.
 
-            System.out.println("sql: " + sqlStatement);
+            
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
                 String recipeTitle = rs.getString(1);
-                System.out.println("recipetitle = " + recipeTitle);
+                
                 unUsedRecipes.add(recipeTitle);
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(pst);
             ConnectDb.close(rs);
@@ -170,7 +170,6 @@ public class MealsGUI extends javax.swing.JPanel {
             usedRecipesComboBox.setVisible(true);
             editMealButton.setVisible(true);
 
-            System.out.println("about to remove all items from the meals cbox");
             mealsComboBox.removeAllItems();
             for (int i = 0; i < myMeals.size(); i++) {
                 mealsComboBox.addItem(myMeals.get(i));
@@ -556,7 +555,9 @@ public class MealsGUI extends javax.swing.JPanel {
                 myMealsLabel.setVisible(false);
                 mealsComboBox.setVisible(false);
             }
-        } else {
+        } else if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete meal?", "Confirm",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            // yes option
             // Delete from database.
             String mealName = mealsComboBox.getSelectedItem().toString();
             deleteMeal(mealName);  // removes the meal from the database
@@ -627,7 +628,7 @@ public class MealsGUI extends javax.swing.JPanel {
 
     private void updateMeal(String oldName, String newName) {
         try {
-            String sqlUpdateStmt = "update MEALS set name = '" + newName + "' where name = '" + oldName + "'";
+            String sqlUpdateStmt = "update MEALS set name = '" + newName.replace("'", "''") + "' where name = '" + oldName.replace("'", "''") + "'";
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(sqlUpdateStmt);
@@ -646,7 +647,9 @@ public class MealsGUI extends javax.swing.JPanel {
     private void insertIntoServedDuringMeal(String mealName) {
         for (int i = 0; i < newUsedRecipes.size(); i++) {
             try {
-                String sqlInsertStmt = "insert into SERVEDDURINGMEAL values ('" + newUsedRecipes.get(i) + "', '" + mealName + "')";
+                String sqlInsertStmt = "insert into SERVEDDURINGMEAL values ('"
+                        + newUsedRecipes.get(i).replace("'", "''") + "', '" + mealName.replace("'", "''") + "')";
+
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
                 stmt.executeUpdate(sqlInsertStmt);
@@ -665,7 +668,7 @@ public class MealsGUI extends javax.swing.JPanel {
 
     private void deleteMeal(String newName) {
         try {
-            String sqlDeleteStmt = "delete from MEALS where name = '" + newName + "'";
+            String sqlDeleteStmt = "delete from MEALS where name = '" + newName.replace("'", "''") + "'";
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(sqlDeleteStmt);
@@ -684,7 +687,7 @@ public class MealsGUI extends javax.swing.JPanel {
     private void deleteFromServedDuringMeal(String mealName) {
         for (int i = 0; i < newUnUsedRecipes.size(); i++) {
             try {
-                String sqlDeleteStmt = "delete from SERVEDDURINGMEAL where recipeTitle = '" + newUnUsedRecipes.get(i) + "'";
+                String sqlDeleteStmt = "delete from SERVEDDURINGMEAL where recipeTitle = '" + newUnUsedRecipes.get(i).replace("'", "''") + "'";
 
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
@@ -704,7 +707,7 @@ public class MealsGUI extends javax.swing.JPanel {
 
     private void insertIntoMeals(String mealName) {
         try {
-            String sqlInsertStmt = "insert into MEALS values ('" + mealName + "')";
+            String sqlInsertStmt = "insert into MEALS values ('" + mealName.replace("'", "''") + "')";
 
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();

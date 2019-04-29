@@ -9,20 +9,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.OracleStatement;
-import sun.util.locale.LocaleUtils;
 
 /**
  *
@@ -88,8 +83,6 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         nextOccurrenceTextField = new javax.swing.JTextField();
         mealPlanTitlesComboBox = new javax.swing.JComboBox<>();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        jLabel3 = new javax.swing.JLabel();
         dateInfoLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
@@ -113,17 +106,6 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             }
         });
 
-        jRadioButton2.setText("Set meal plan schedule to automatic");
-
-        jLabel3.setFont(new java.awt.Font("Tahoma", 2, 13)); // NOI18N
-        jLabel3.setText("What is this?");
-        jLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 204, 255)));
-        jLabel3.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel3MouseClicked(evt);
-            }
-        });
-
         dateInfoLabel.setText("This meal plan is scheduled for the week of:");
 
         jLabel2.setText("Dates must be entered EXACTLY in the format of MM/DD/YYYY.");
@@ -135,14 +117,7 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(355, 355, 355)
                 .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(165, 165, 165))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jRadioButton2)
-                        .addGap(90, 90, 90))))
+                .addGap(165, 479, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -164,27 +139,18 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jRadioButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)
-                        .addGap(134, 134, 134))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 122, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dateInfoLabel))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(41, 41, 41)
+                .addComponent(mealPlanTitlesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nextOccurrenceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dateInfoLabel))
                 .addComponent(jLabel2)
                 .addGap(32, 32, 32)
                 .addComponent(submitChangesButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cancelButton)
-                .addContainerGap(62, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -194,8 +160,7 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             conn = ConnectDb.setupConnection();
             String mealPlanTitle = mealPlanTitlesComboBox.getSelectedItem().toString();
             try {
-                mealPlanTitle = mealPlanTitle.replace("'", "''");
-                String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle + "'";
+                String sqlStatement = "select * from MEALPLAN where title = '" + mealPlanTitle.replace("'", "''") + "'";
 
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
                 rs = (OracleResultSet) pst.executeQuery();
@@ -203,7 +168,7 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
                     Date nextOccurrence = rs.getDate(2);
                     if (isDateInPast(nextOccurrence)) {  // default date - don't show the date. Instead tell user it is not scheduled.
                         nextOccurrenceTextField.setText("");
-                            
+
                         dateInfoLabel.setText("This meal plan is not scheduled! Enter a date during the week you would like it to be scheduled for.");
                     } else {  // Place the date in the combo box.
                         nextOccurrenceTextField.setText(getMMDDYYYYFromDate(nextOccurrence.toString()));
@@ -236,6 +201,7 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         }
     }
 
+    // get a date from the database in the form mm/dd/yyyy
     public String getMMDDYYYYFromDate(String sqlDate) {
         String strDate = "";
         // convert the date to mm/dd/yyyy below
@@ -243,15 +209,30 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
             strDate += sqlDate.substring(5, 7) + "/"
                     + sqlDate.substring(8, 10) + "/" + sqlDate.substring(0, 4);
         } catch (Exception ex) {
-            System.out.println("Problem converting sql date to MM/DD/YYYY format.");
-            JOptionPane.showMessageDialog(null, ex);
+            JOptionPane.showMessageDialog(this,
+                    "Error fetching the next occurrence date from Oracle SQL.\nMessage: " + ex,
+                    "Problem Fetching Date from SQL",
+                    JOptionPane.ERROR_MESSAGE);
         }
         return strDate;
     }
 
-    private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
-
-    }//GEN-LAST:event_jLabel3MouseClicked
+    // prepare a date for insertion into the database (YYYY-MM-DD format)
+    public String getYYYYMMDDFromDateTextField(String date) {
+        String strDate = "";
+        // convert the date to mm/dd/yyyy below
+        try {
+            strDate = date.substring(date.lastIndexOf("/") + 1) + "-"
+                    + date.substring(0, date.indexOf("/")) + "-"
+                    + date.substring(date.indexOf("/") + 1, date.lastIndexOf("/"));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error! Check you input. \nMessage: " + ex,
+                    "Update Unsuccessful",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return strDate;
+    }
 
     private String toSqlDateFormat(String s) {
         String sql = null;
@@ -263,7 +244,6 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
                     "Update Failed",
                     JOptionPane.ERROR_MESSAGE);
         }
-        System.out.println("to sql format:" + sql);
         return sql;
     }
 
@@ -271,26 +251,44 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
         // Try inserting the user's date format into the database.
         String date = nextOccurrenceTextField.getText();
         try {
-            // Get the first day of the week specified.
-            String sqlUpdateStmt = "update MEALPLAN set nextOccurrence = (select trunc('" + date
-                    + "', 'IW') from_date, next_day(trunc(sysdate,'IW'),'SUNDAY') to_date from dual)"
-                    + " where title = '" + mealPlanTitlesComboBox.getSelectedItem() + "'";
+            date = getYYYYMMDDFromDateTextField(date);  // convert date to YYYY-MM-
+            if (date != "") {
 
-            conn = ConnectDb.setupConnection();
-            stmt = (OracleStatement) conn.createStatement();
-            stmt.executeUpdate(sqlUpdateStmt);
+                // Get the first day of the week specified, make that the day the meal plan is scheduled to occur during.
+                String sqlUpdateStmt = "update MEALPLAN set nextOccurrence = "
+                        + "(select next_day(trunc(to_date('" + date
+                        + "','YYYY-MM-DD'),'IW'),'SUNDAY') - case when to_number(to_char(to_date('"
+                        + date + "','YYYY-MM-DD'),'D')) = 1 then 0 else 7 end from dual) "
+                        + "where title = '" 
+                        + mealPlanTitlesComboBox.getSelectedItem().toString().replace("'", "''") + "'";
+
+                conn = ConnectDb.setupConnection();
+                stmt = (OracleStatement) conn.createStatement();
+                stmt.executeUpdate(sqlUpdateStmt);
+                JOptionPane.showMessageDialog(this,
+                        "Update successful!",
+                        "Update Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {  // meal plan already scheduled for that week
             JOptionPane.showMessageDialog(this,
-                    "Update successful!",
-                    "Update Success",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Error! Meal plan already scheduled for that week.",
+                    "Update Unsuccessful",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            JOptionPane.showMessageDialog(this,
+                    "Error! Check you input. \nMessage: " + e,
+                    "Update Unsuccessful",
+                    JOptionPane.ERROR_MESSAGE);
         } finally {
             try {  // Try closing the connection and the statement.
                 ConnectDb.close(conn);
                 ConnectDb.close(stmt);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                JOptionPane.showMessageDialog(this,
+                        "Error closing connections and/or Sql statement. \nMessage: " + e,
+                        "Update Successful",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_submitChangesButtonActionPerformed
@@ -304,7 +302,6 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
 
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
 
-        System.out.println(cal.getTime());
         return cal.getTime();
     }
 
@@ -350,9 +347,7 @@ public class ConfigureScheduleGUI extends javax.swing.JPanel {
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel dateInfoLabel;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JComboBox<String> mealPlanTitlesComboBox;
     private javax.swing.JTextField nextOccurrenceTextField;
     private javax.swing.JButton submitChangesButton;

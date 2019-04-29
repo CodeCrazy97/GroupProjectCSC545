@@ -150,10 +150,10 @@ public class Ingredients {
         try {
             String sqlStatement = "Update INGREDIENTS set foodGroup=?, inStock=?, nutritionFacts=? where name=?";
             updateIngredient = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-            updateIngredient.setString(1, this.foodGroup);
+            updateIngredient.setString(1, this.foodGroup.replace("'", "''"));
             updateIngredient.setString(2, this.inStock ? "Y": "N");
-            updateIngredient.setString(3, this.nutritionFacts);
-            updateIngredient.setString(4, this.name);
+            updateIngredient.setString(3, this.nutritionFacts.replace("'", "''"));
+            updateIngredient.setString(4, this.name.replace("'", "''"));
             updateIngredient.executeUpdate();
             conn.commit();
             
@@ -172,10 +172,10 @@ public class Ingredients {
             String sqlStatement = "Insert into INGREDIENTS (name, foodGroup, inStock, nutritionFacts) " 
                     + "values (?, ?, ?, ?)";
             addIngredient = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-            addIngredient.setString(1, this.name);
-            addIngredient.setString(2, this.foodGroup);
+            addIngredient.setString(1, this.name.replace("'", "''"));
+            addIngredient.setString(2, this.foodGroup.replace("'", "''"));
             addIngredient.setString(3, this.inStock ? "Y": "N");
-            addIngredient.setString(4, this.nutritionFacts);
+            addIngredient.setString(4, this.nutritionFacts.replace("'", "''"));
             addIngredient.executeUpdate();
             conn.commit();
         } catch (Exception ex) {

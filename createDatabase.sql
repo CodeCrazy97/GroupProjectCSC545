@@ -58,7 +58,8 @@ constraint fk_servedDuringMeal_mealname foreign key (mealName) references meals(
 
 create table mealPlan (
 title varchar(100) primary key,
-nextOccurrence date   -- Date when the meal plan is scheduled to occur next (default date is in the past, so it is not scheduled to occur unless the user says so)
+nextOccurrence date,   -- Date when the meal plan is scheduled to occur next (default date is in the past, so it is not scheduled to occur unless the user says so)
+constraint unique_nextOccurrence unique (nextOccurrence)
 );
 
 create table mealDay(

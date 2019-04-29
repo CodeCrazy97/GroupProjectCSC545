@@ -55,7 +55,7 @@ public class MealDays {
     }
 
     private String mealPlanTitle;
-    
+
     private String mealName;
     private String mealTitle;
     private String dayOfWeek;
@@ -76,7 +76,7 @@ public class MealDays {
         this.mealTitle = mealTitle;
         this.dayOfWeek = dayOfWeek;
     }
-    
+
     public MealDays(String mealTitle, String mealName, String dayOfWeek, String mealPlanTitle) {
         this.mealName = mealName;
         this.mealTitle = mealTitle;
@@ -95,42 +95,43 @@ public class MealDays {
     public String getDayOfWeek() {
         return dayOfWeek;
     }
-    
+
     public String getMealPlanTitle() {
         return mealPlanTitle;
     }
-    
-    public void add() throws Exception{
+
+    public void add() throws Exception {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement addMealDay = null;
         try {
-            String sqlStatement = "Insert into MEALDAY (dayOfWeek, mealTitle, mealName, mealPlanTitle) " 
+            String sqlStatement = "Insert into MEALDAY (dayOfWeek, mealTitle, mealName, mealPlanTitle) "
                     + "values (?, ?, ?, ?)";
             addMealDay = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             addMealDay.setString(1, this.dayOfWeek);
-            addMealDay.setString(2, this.mealTitle);
-            addMealDay.setString(3, this.mealName);
-            addMealDay.setString(4, this.mealPlanTitle);
+            addMealDay.setString(2, this.mealTitle.replace("'", "''"));
+            addMealDay.setString(3, this.mealName.replace("'", "''"));
+            addMealDay.setString(4, this.mealPlanTitle.replace("'", "''"));
             addMealDay.executeUpdate();
             conn.commit();
         } catch (Exception ex) {
             System.out.println(ex);
         }
     }
+
     /**
      * Gets the meal plan based on the primary key
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public static List<MealDays> getByMealPlanTitle(String title) throws Exception {
         List<MealDays> mealDaysList = new ArrayList<MealDays>();
 
         Connection conn = ConnectDb.setupConnection();
-        String sqlStatement = "select * from MealDay where mealPlanTitle=?";
+        String sqlStatement = "select * from MealDay where mealPlanTitle='" + title.replace("'", "''") + "'";
         OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-        pst.setString(1, title);
         OracleResultSet rs = (OracleResultSet) pst.executeQuery();
         try {
-            
+
             while (rs.next()) {
                 String dayOfWeek = rs.getString(1);
                 String mealTitle = rs.getString(2);
@@ -148,11 +149,13 @@ public class MealDays {
         }
         return mealDaysList;
     }
+
     /**
      * Gets mealDays by the Meal Name, don't know if needed
+     *
      * @param name
      * @return List of meal days
-     * @throws Exception 
+     * @throws Exception
      */
     public static List<MealDays> getByMealName(String name) throws Exception {
         List<MealDays> mealDaysList = new ArrayList<>();
@@ -160,10 +163,10 @@ public class MealDays {
         Connection conn = ConnectDb.setupConnection();
         String sqlStatement = "select * from MealDay where mealName=?";
         OraclePreparedStatement pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-        pst.setString(1, name);
+        pst.setString(1, name.replace("'", "''"));
         OracleResultSet rs = (OracleResultSet) pst.executeQuery();
         try {
-            
+
             while (rs.next()) {
                 String dayOfWeek = rs.getString(1);
                 String mealTitle = rs.getString(2);

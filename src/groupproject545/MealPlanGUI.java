@@ -4,16 +4,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
+import oracle.jdbc.OracleStatement;
 
 /**
  *
@@ -24,6 +23,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
     Connection conn = null;
     OraclePreparedStatement pst = null;
     OracleResultSet rs = null;
+    OracleStatement stmt = null;
 
     public static DefaultTableModel model = null;  // used for adding/removing rows and editing cells in the schedule table
 
@@ -99,42 +99,6 @@ public class MealPlanGUI extends javax.swing.JPanel {
                     mealPlans.add(name);
                     mealPlanComboBox.addItem(name);
                 } while (rs.next());
-
-                
-                /*
-                // -------------------------------------------------------------
-                // ----- Now, find out which meal plan is active this week -----
-                // (We already know there are meal plans in the database if the code got to this point.)
-                // First, get today's date.
-                Date date = new Date();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  //Put it in SQL format.
-                String sqlDate = sdf.format(date);  // Turn it into a string.
-
-                try {
-                    String sqlStatement2 = "select * from MEALPLAN where NEXTOCCURRENCE = '" + sqlDate + "'";
-
-                    pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement2);
-
-                    rs = (OracleResultSet) pst.executeQuery();
-                    if (!rs.next()) {  // No meal plan scheduled for this week. Hide the jtable.
-                        // Hide the JPanel that encapsulates the scheduleTable
-                        schedulingPanel.setVisible(false);
-
-                        // Let the user know there are not any meal plans.
-                        messageLabel.setText("There is not an active meal plan for this week. Click on \"Edit Plan\" to configure your meal plan schedule.");
-                        messageLabel.setVisible(true);
-                    } else {
-                        // Place all meals in the jtable.
-                        while (rs.next()) {
-
-                            // There should be only one meal plan active per week, so we can exit after just one iteration.
-                            break;
-                        }
-                    }
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);
-                }
-                */
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
@@ -292,22 +256,23 @@ public class MealPlanGUI extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void mealPlanComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mealPlanComboBoxActionPerformed
-        // Show the newly selected meal plan.
-        int selectedIndex = mealPlanComboBox.getSelectedIndex();
-        String mealPlanName = mealPlans.get(selectedIndex);
-        try {
-            mealDays = MealDays.getByMealPlanTitle(mealPlanName);
-            displayMeals();
+        // Show the newly selected meal plan, if there are meals to show.
+        if (mealPlans.size() > 0) {
+            int selectedIndex = mealPlanComboBox.getSelectedIndex();
+            String mealPlanName = mealPlans.get(selectedIndex);
+            try {
+                mealDays = MealDays.getByMealPlanTitle(mealPlanName);
+                displayMeals();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
+            }
         }
-        catch (Exception ex) {
-            System.out.println(ex);
-        }
-        
+
     }//GEN-LAST:event_mealPlanComboBoxActionPerformed
-    
+
     private void displayMeals() {
-        String[] daysOfWeek = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-        List<String[]> data = new ArrayList<String[]>();  
+        String[] daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        List<String[]> data = new ArrayList<String[]>();
         // for each day of the week
         for (int i = 0; i < daysOfWeek.length; i++) {
             // sets the working row
@@ -316,22 +281,22 @@ public class MealPlanGUI extends javax.swing.JPanel {
                 // if day of week matches
                 if (daysOfWeek[i].equals(mealDay.getDayOfWeek())) {
                     // if a row needs to be added
-                    if (row == data.size())
-                       data.add(new String[7]); // add row
-                    // set row values
+                    if (row == data.size()) {
+                        data.add(new String[7]); // add row
+                    }                    // set row values
                     data.get(row)[i] = mealDay.getMealTitle() + " " + mealDay.getMealName();
 //                    scheduleTable.getModel().setValueAt(data.get(row)[i], row, i);
                     System.out.println(data.get(row)[i]);
                     row++;
-                } 
+                }
             }
         }
         // create a table model with the new values
         mealTableModel = new DefaultTableModel(data.toArray(new String[0][]), daysOfWeek);
         scheduleTable.setModel(mealTableModel);
-        
+
     }
-    
+
     private List<String> getMeals() {
         List<String> meals = new ArrayList<String>();
         conn = ConnectDb.setupConnection();
@@ -354,7 +319,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
         }
         return meals;
     }
-    
+
 
     private void addMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMealPlanButtonActionPerformed
         // First, make sure there are meals to add.
@@ -397,7 +362,36 @@ public class MealPlanGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_configureScheduleButtonActionPerformed
 
     private void deleteMealPlanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteMealPlanButtonActionPerformed
-        // TODO add your handling code here:
+        if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete the meal plan?", "Confirm",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            // yes option        
+            // Delete the meal plan from the database.
+            try {
+                String mpTitle = mealPlanComboBox.getSelectedItem().toString();
+                String sqlDeleteStmt = "delete from MEALPLAN where title = '" + mpTitle.replace("'", "''") + "'";
+                System.out.println("sqlDeleteFrom mealplan for = " + sqlDeleteStmt);
+                conn = ConnectDb.setupConnection();
+                stmt = (OracleStatement) conn.createStatement();
+                stmt.execute(sqlDeleteStmt);
+
+                // Delete from the data structure.
+                mealPlans.remove(mpTitle);
+
+                if (mealPlans.size() == 0) {  // no more meal plans to show
+                    schedulingPanel.setVisible(false);
+                    messageLabel.setVisible(true);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);  // Show the exception message.
+            } finally {
+                try {  // Try closing the connection and the statement.
+                    conn.close();
+                    stmt.close();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, e);  // Show the exception message.}
+                }
+            }
+        }
     }//GEN-LAST:event_deleteMealPlanButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

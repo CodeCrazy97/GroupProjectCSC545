@@ -3,6 +3,7 @@ package groupproject545;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 
@@ -61,7 +62,7 @@ public class Recipes {
             }
 
         } catch (Exception ex) {
-            System.out.println("ERROR: " + ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -75,7 +76,7 @@ public class Recipes {
 
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from CALLSFOR where recipeTitle = '" + recipeTitle + "' order by ingredientName";
+            String sqlStatement = "select * from CALLSFOR where recipeTitle = '" + recipeTitle.replace("'", "''") + "' order by ingredientName";
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
@@ -84,7 +85,7 @@ public class Recipes {
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -99,7 +100,7 @@ public class Recipes {
         conn = ConnectDb.setupConnection();
         try {
             String sqlStatement = "select * from ingredients where name <> all(select ingredientName from CALLSFOR where recipeTitle = '"
-                    + recipeTitle + "') order by name";
+                    + recipeTitle.replace("'", "''") + "') order by name";
 
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
@@ -109,7 +110,7 @@ public class Recipes {
             }
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -117,28 +118,26 @@ public class Recipes {
         }
         return unusedIngredients;
     }
+
     /**
      * Updates current recipe
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public void update() throws Exception {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement updateRecipe = null;
-        
+
         try {
-            String sqlStatement = "Update RECIPES set category=?, instructions=? where title=?";
+            String sqlStatement = "Update RECIPES set category='" + this.category.replace("'", "''") + "', instructions='" + this.instructions.replace("'", "''") + "' where title='" + this.title.replace("'", "''") + "'";
             updateRecipe = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-            updateRecipe.setString(3, this.title);
-            updateRecipe.setString(1, this.category);
-            updateRecipe.setString(2, this.instructions);
-            updateRecipe.executeUpdate();
             conn.commit();
-            
+
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         }
     }
-    
+
     /**
      * Adds recipe
      */
@@ -146,16 +145,13 @@ public class Recipes {
         Connection conn = ConnectDb.setupConnection();
         OraclePreparedStatement addRecipe = null;
         try {
-            String sqlStatement = "Insert into Recipes (title, category, instructions) " 
-                    + "values (?, ?, ?)";
+            String sqlStatement = "Insert into Recipes (title, category, instructions) "
+                    + "values ('" + this.title.replace("'", "''") + "', '" + this.instructions.replace("'", "''") + "', '" + this.category.replace("'", "''") + "')";
             addRecipe = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
-            addRecipe.setString(1, this.title);
-            addRecipe.setString(2, this.category);
-            addRecipe.setString(3, this.instructions);
             addRecipe.executeUpdate();
             conn.commit();
         } catch (Exception ex) {
-            System.out.println(ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         }
     }
 

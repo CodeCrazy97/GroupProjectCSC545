@@ -90,7 +90,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println("ERROR: " + ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -114,7 +114,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println("ERROR: " + ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -555,7 +555,7 @@ public class RecipesGUI extends javax.swing.JPanel {
         // to delete a recipe or when a user wishes to cancel out of edit mode.
 
         if (deleteRecipeButton.getText().equals("Delete Recipe")) {
-            if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete recipe(This is permanent)?", "Confirm",
+            if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete recipe?", "Confirm",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 // yes option
 
@@ -563,7 +563,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                 String title = recipesComboBox.getSelectedItem().toString();
                 try {
                     // First, delete from CALLSFOR.
-                    String sqlDeleteStmt = "delete from RECIPES where title = '" + title + "'";
+                    String sqlDeleteStmt = "delete from RECIPES where title = '" + title.replace("'", "''") + "'";
 
                     conn = ConnectDb.setupConnection();
                     stmt = conn.createStatement();
@@ -673,7 +673,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             try {
                 // First, delete from CALLSFOR.
                 String sqlDeleteStmt = "delete from CALLSFOR where recipeTitle = '"
-                        + recipeTitle + "' and ingredientName = '" + ingredientsForDeleteFromCallsFor.get(i) + "'";
+                        + recipeTitle.replace("'", "''") + "' and ingredientName = '" + ingredientsForDeleteFromCallsFor.get(i).replace("'", "''") + "'";
                 System.out.println("deleting from callsfor: " + sqlDeleteStmt);
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
@@ -694,8 +694,8 @@ public class RecipesGUI extends javax.swing.JPanel {
     private void updateRecipesNoTitleChange(String title, String instructions, String category) {
         // Insert the item into the database.
         try {
-            String sqlUpdateStmt = "update RECIPES set instructions = '" + instructions + "', category = '"
-                    + category + "' where title = '" + title + "'";
+            String sqlUpdateStmt = "update RECIPES set instructions = '" + instructions.replace("'", "''") + "', category = '"
+                    + category.replace("'", "''") + "' where title = '" + title.replace("'", "''") + "'";
             System.out.println("about to update recipes...sql:" + sqlUpdateStmt);
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
@@ -714,9 +714,9 @@ public class RecipesGUI extends javax.swing.JPanel {
 
     private void updateRecipesTitleChange(String oldTitle, String title, String instructions, String category) {
         try {
-            String sqlInsertStmt = "update RECIPES set title = '" + title + "', "
-                    + "instructions = '" + instructions + "', category = '" + category + "' where "
-                    + "title = '" + oldTitle + "'";
+            String sqlInsertStmt = "update RECIPES set title = '" + title.replace("'", "''") + "', "
+                    + "instructions = '" + instructions.replace("'", "''") + "', category = '" + category.replace("'", "''") + "' where "
+                    + "title = '" + oldTitle.replace("'", "''") + "'";
 
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
@@ -735,7 +735,7 @@ public class RecipesGUI extends javax.swing.JPanel {
 
     private void insertIntoRecipes(String title, String instructions, String category) {
         try {
-            String sqlInsertStmt = "insert into RECIPES values ('" + title + "', '" + instructions + "', '" + category + "')";
+            String sqlInsertStmt = "insert into RECIPES values ('" + title.replace("'", "''") + "', '" + instructions.replace("'", "''") + "', '" + category.replace("'", "''") + "')";
 
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
@@ -756,7 +756,7 @@ public class RecipesGUI extends javax.swing.JPanel {
         // Insert into the CALLSFOR table the ingredients used in the recipe.
         for (int i = 0; i < ingredientsForInsertIntoCallsFor.size(); i++) {
             try {
-                String sqlInsertStmt = "insert into CALLSFOR values ('" + ingredientsForInsertIntoCallsFor.get(i) + "', '" + title + "')";
+                String sqlInsertStmt = "insert into CALLSFOR values ('" + ingredientsForInsertIntoCallsFor.get(i).replace("'", "''") + "', '" + title.replace("'", "''") + "')";
                 System.out.println("inserting into callsfor: sql=" + sqlInsertStmt);
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
@@ -838,7 +838,7 @@ public class RecipesGUI extends javax.swing.JPanel {
 
             conn = ConnectDb.setupConnection();
             try {
-                String sqlStatement = "select title from RECIPES where category = '" + category + "' order by title";
+                String sqlStatement = "select title from RECIPES where category = '" + category.replace("'", "''") + "' order by title";
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
                 rs = (OracleResultSet) pst.executeQuery();
                 while (rs.next()) {
@@ -846,7 +846,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                 }
 
             } catch (Exception ex) {
-                System.out.println("ERROR: " + ex);
+                JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
             } finally {
                 ConnectDb.close(rs);
                 ConnectDb.close(pst);
@@ -856,7 +856,7 @@ public class RecipesGUI extends javax.swing.JPanel {
 
             conn = ConnectDb.setupConnection();
             try {
-                String sqlStatement = "select recipeTitle from CALLSFOR where ingredientName = '" + ingredient + "' order by recipeTitle";
+                String sqlStatement = "select recipeTitle from CALLSFOR where ingredientName = '" + ingredient.replace("'", "''") + "' order by recipeTitle";
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
                 rs = (OracleResultSet) pst.executeQuery();
                 while (rs.next()) {
@@ -864,7 +864,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                 }
 
             } catch (Exception ex) {
-                System.out.println("ERROR: " + ex);
+                JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
             } finally {
                 ConnectDb.close(rs);
                 ConnectDb.close(pst);
@@ -874,7 +874,7 @@ public class RecipesGUI extends javax.swing.JPanel {
 
             conn = ConnectDb.setupConnection();
             try {
-                String sqlStatement = "select recipeTitle from CALLSFOR where ingredientName = '" + ingredient + "' order by recipeTitle";
+                String sqlStatement = "select recipeTitle from CALLSFOR where ingredientName = '" + ingredient.replace("'", "''") + "' order by recipeTitle";
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
                 rs = (OracleResultSet) pst.executeQuery();
                 while (rs.next()) {
@@ -883,7 +883,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                 }
 
             } catch (Exception ex) {
-                System.out.println("ERROR: " + ex);
+                JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
             } finally {
                 ConnectDb.close(rs);
                 ConnectDb.close(pst);
@@ -893,7 +893,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             // get recipes filtered by category
             conn = ConnectDb.setupConnection();
             try {
-                String sqlStatement = "select title from RECIPES where category = '" + category + "' order by title";
+                String sqlStatement = "select title from RECIPES where category = '" + category.replace("'", "''") + "' order by title";
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
                 rs = (OracleResultSet) pst.executeQuery();
                 while (rs.next()) {
@@ -902,7 +902,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                 }
 
             } catch (Exception ex) {
-                System.out.println("ERROR: " + ex);
+                JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
             } finally {
                 ConnectDb.close(rs);
                 ConnectDb.close(pst);

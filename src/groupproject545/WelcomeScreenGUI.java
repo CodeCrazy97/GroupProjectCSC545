@@ -5,6 +5,8 @@
  */
 package groupproject545;
 
+import java.io.File;
+import java.net.URL;
 import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -48,7 +50,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
 
         // Make the jlist be used by model.
         outOfStockIngredientsList.setModel(model);
-        
+
         // by default, no ingredient is selected, so hide the option to set an ingredient to inStock
         removeFromShoppingListButton.setVisible(false);
 
@@ -69,8 +71,8 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
             String dateSQLFormatted = getCurrentDateInYYYYMMDDFormat();
 
             // Below query returns all ingredients that are out of stock for next week's mealplan
-            String sqlStatement = "select distinct i.name from ingredients i, recipes r, callsfor cf, servedDuringMeal sdm, meals m, mealDay md, mealplan mp\n"
-                    + "where mp.title = 'next' and md.mealPlanTitle = mp.title and m.name = md.mealName and sdm.mealName = m.name and sdm.recipeTitle = r.title\n"
+            String sqlStatement = "select distinct i.name from ingredients i, recipes r, callsfor cf, servedDuringMeal sdm, meals m, mealDay md, mealplan mp "
+                    + "where mp.title = '" + mealPlanTitle.replace("'", "''") + "' and md.mealPlanTitle = mp.title and m.name = md.mealName and sdm.mealName = m.name and sdm.recipeTitle = r.title "
                     + "and cf.recipeTitle = r.title and cf.ingredientName = i.name and i.inStock = 'N' and mp.nextOccurrence "
                     + "between (select next_day(to_date('" + dateSQLFormatted + "','YYYY-MM-DD'),'SUN') from dual) "
                     + "and (select next_day(to_date('" + dateSQLFormatted + "', 'YYYY-MM-DD'),'SUN') + 6 from dual)";
@@ -83,7 +85,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println("ERROR: " + ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -97,7 +99,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
             try {
                 String sqlStatement = "select md.dayOfWeek, md.mealTitle, sdm.recipeTitle "
                         + "from servedduringmeal sdm join (select mealTitle, mealname, dayOfWeek "
-                        + "from mealday where mealplantitle = '" + mealPlanTitle + "') md "
+                        + "from mealday where mealplantitle = '" + mealPlanTitle.replace("'", "''") + "') md "
                         + "on md.mealname = sdm.mealname";
 
                 pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
@@ -122,7 +124,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
                 }
 
             } catch (Exception ex) {
-                System.out.println("ERROR: " + ex);
+                JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
             } finally {
                 ConnectDb.close(rs);
                 ConnectDb.close(pst);
@@ -150,7 +152,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
             }
 
         } catch (Exception ex) {
-            System.out.println("ERROR: " + ex);
+            JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
             ConnectDb.close(rs);
             ConnectDb.close(pst);
@@ -360,7 +362,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
         for (int i = 0; i < selectedIngredients.length; i++) {
             try {
                 String sqlUpdateStmt = "update INGREDIENTS set inStock = 'Y' where name = '"
-                        + outOfStockIngredientsList.getModel().getElementAt(i) + "'";
+                        + outOfStockIngredientsList.getModel().getElementAt(i).replace("'", "''") + "'";
                 outOfStockIngredients.remove(i);
 
                 conn = ConnectDb.setupConnection();

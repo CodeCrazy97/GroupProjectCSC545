@@ -5,8 +5,6 @@
  */
 package groupproject545;
 
-import java.io.File;
-import java.net.URL;
 import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import oracle.jdbc.OraclePreparedStatement;
@@ -72,18 +69,21 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
 
             // Below query returns all ingredients that are out of stock for next week's mealplan
             String sqlStatement = "select distinct i.name from ingredients i, recipes r, callsfor cf, servedDuringMeal sdm, meals m, mealDay md, mealplan mp "
-                    + "where mp.title = '" + mealPlanTitle.replace("'", "''") + "' and md.mealPlanTitle = mp.title and m.name = md.mealName and sdm.mealName = m.name and sdm.recipeTitle = r.title "
+                    + "where md.mealPlanTitle = mp.title and m.name = md.mealName and sdm.mealName = m.name and sdm.recipeTitle = r.title "
                     + "and cf.recipeTitle = r.title and cf.ingredientName = i.name and i.inStock = 'N' and mp.nextOccurrence "
                     + "between (select next_day(to_date('" + dateSQLFormatted + "','YYYY-MM-DD'),'SUN') from dual) "
                     + "and (select next_day(to_date('" + dateSQLFormatted + "', 'YYYY-MM-DD'),'SUN') + 6 from dual)";
 
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery(sqlStatement);
-            while (rs.next()) {
-                outOfStockIngredients.add(rs.getString(1));
-                model.addElement(rs.getString(1));
+            if (rs.next()) {
+                do {
+                    outOfStockIngredients.add(rs.getString(1));
+                    model.addElement(rs.getString(1));
+                } while (rs.next());
+            } else {
+                jLabel1.setText("Nothing on the shopping list for next week.");
             }
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, ex);  // Show the exception message.
         } finally {
@@ -121,6 +121,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
 
                     // always show recipes
                     todaysMealsTextArea.append(recipe + "\n");
+
                 }
 
             } catch (Exception ex) {
@@ -131,7 +132,7 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
                 ConnectDb.close(conn);
             }
         } else {
-            dailyMealLabel.setText("No Meal Plan for This Week");
+            dailyMealLabel.setText("No Meal Plan Scheduled for This Week");
         }
     }
 
@@ -385,6 +386,9 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
             model.remove(i);
         }
 
+        if (outOfStockIngredients.size() == 0) {
+            jLabel1.setText("Nothing on the shopping list for next week.");
+        }
 
     }//GEN-LAST:event_removeFromShoppingListButtonActionPerformed
 

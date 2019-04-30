@@ -67,8 +67,12 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private void populateComboBox() {
         ingredientsList = ingredientClass.getAllIngredients();
         ingredientsComboBox.removeAllItems(); // Remove anything that was already in the combo box.
-        for (int i = 0; i < ingredientsList.size(); i++) {
-            ingredientsComboBox.addItem(ingredientsList.get(i).getName());
+        if (ingredientsList.size() > 0) {
+            for (int i = 0; i < ingredientsList.size(); i++) {
+                ingredientsComboBox.addItem(ingredientsList.get(i).getName());
+            }
+        } else {
+            ingredientInfoPanel.setVisible(false);
         }
     }
 
@@ -84,58 +88,26 @@ public class IngredientsGUI extends javax.swing.JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
         button1 = new java.awt.Button();
-        ingredientsComboBox = new javax.swing.JComboBox<>();
+        addNewIngredientButton = new javax.swing.JButton();
+        ingredientInfoPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        foodGroupTextField = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        nutritionFactsTextArea = new javax.swing.JTextArea();
-        submitChangesButton = new javax.swing.JButton();
-        deleteIngredientButton = new javax.swing.JButton();
-        addNewIngredientButton = new javax.swing.JButton();
-        ingredientNameTextField = new javax.swing.JTextField();
-        ingredientNameLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         inStockCheckBox = new java.awt.Checkbox();
+        submitChangesButton = new javax.swing.JButton();
+        ingredientNameTextField = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        nutritionFactsTextArea = new javax.swing.JTextArea();
+        foodGroupTextField = new javax.swing.JTextField();
+        ingredientNameLabel = new javax.swing.JLabel();
+        deleteIngredientButton = new javax.swing.JButton();
+        ingredientsComboBox = new javax.swing.JComboBox<>();
 
         button1.setLabel("button1");
 
         addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 formKeyPressed(evt);
-            }
-        });
-
-        ingredientsComboBox.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        ingredientsComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ingredientsComboBoxActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel1.setText("Nutrition facts:");
-
-        jLabel2.setText("Food group:");
-
-        foodGroupTextField.setEditable(false);
-
-        nutritionFactsTextArea.setEditable(false);
-        nutritionFactsTextArea.setColumns(20);
-        nutritionFactsTextArea.setRows(5);
-        jScrollPane1.setViewportView(nutritionFactsTextArea);
-
-        submitChangesButton.setText("Edit Ingredient");
-        submitChangesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                submitChangesButtonActionPerformed(evt);
-            }
-        });
-
-        deleteIngredientButton.setText("Delete Ingredient");
-        deleteIngredientButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteIngredientButtonActionPerformed(evt);
             }
         });
 
@@ -146,10 +118,13 @@ public class IngredientsGUI extends javax.swing.JPanel {
             }
         });
 
-        ingredientNameLabel.setText("Ingredient Name:");
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel1.setText("Nutrition facts:");
 
-        inStockCheckBox.setEnabled(false);
+        jLabel2.setText("Food group:");
+
         inStockCheckBox.setLabel("Item in stock");
+        inStockCheckBox.setEnabled(false);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -168,26 +143,56 @@ public class IngredientsGUI extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(219, 219, 219))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
+        submitChangesButton.setText("Edit Ingredient");
+        submitChangesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitChangesButtonActionPerformed(evt);
+            }
+        });
+
+        nutritionFactsTextArea.setEditable(false);
+        nutritionFactsTextArea.setColumns(20);
+        nutritionFactsTextArea.setRows(5);
+        jScrollPane1.setViewportView(nutritionFactsTextArea);
+
+        foodGroupTextField.setEditable(false);
+
+        ingredientNameLabel.setText("Ingredient Name:");
+
+        deleteIngredientButton.setText("Delete Ingredient");
+        deleteIngredientButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteIngredientButtonActionPerformed(evt);
+            }
+        });
+
+        ingredientsComboBox.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        ingredientsComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ingredientsComboBoxActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout ingredientInfoPanelLayout = new javax.swing.GroupLayout(ingredientInfoPanel);
+        ingredientInfoPanel.setLayout(ingredientInfoPanelLayout);
+        ingredientInfoPanelLayout.setHorizontalGroup(
+            ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
+                        .addGroup(ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ingredientInfoPanelLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(87, 87, 87))
+                            .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
                                 .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(46, 46, 46)
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
+                            .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
                                 .addGap(10, 10, 10)
                                 .addComponent(ingredientNameLabel)
                                 .addGap(18, 18, 18)
@@ -195,41 +200,63 @@ public class IngredientsGUI extends javax.swing.JPanel {
                                 .addGap(59, 59, 59)
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(66, 66, 66)
-                        .addComponent(addNewIngredientButton)
-                        .addGap(34, 34, 34)
+                                .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())
+                    .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
+                        .addGap(79, 79, 79)
                         .addComponent(submitChangesButton)
-                        .addGap(35, 35, 35)
-                        .addComponent(deleteIngredientButton)))
-                .addContainerGap(132, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(deleteIngredientButton)
+                        .addGap(41, 41, 41))))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+        ingredientInfoPanelLayout.setVerticalGroup(
+            ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(37, 37, 37)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(foodGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2)
                             .addComponent(ingredientNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ingredientNameLabel)))
                     .addComponent(ingredientsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(ingredientInfoPanelLayout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addComponent(jLabel1)))
                 .addGap(36, 36, 36)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addGroup(ingredientInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(submitChangesButton)
-                    .addComponent(deleteIngredientButton)
-                    .addComponent(addNewIngredientButton))
-                .addGap(74, 74, 74))
+                    .addComponent(deleteIngredientButton))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(85, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(addNewIngredientButton)
+                        .addGap(227, 227, 227))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(ingredientInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(70, 70, 70))))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ingredientInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(addNewIngredientButton)
+                .addGap(40, 40, 40))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -293,50 +320,50 @@ public class IngredientsGUI extends javax.swing.JPanel {
             oldName = ingredientNameTextField.getText();  // Store the item's old name.
             ingredientsComboBox.setVisible(false);
         } else // Change to "Edit Ingredient".
-         if (ingredientIsNotEmpty(ingredientNameTextField.getText()) && ingredientDoesNotAlreadyExist(true, ingredientNameTextField.getText())) {  // Before submitting changes to the database, validate the ingredient (make sure it's name is not null and that there is not already an ingredient with that name).
-                // Capture modifications before removing the item (remember: removing items from combo box will cause the ingredientsComboBoxActionPerformed method to be called, as a new item will automatically be selected)
-                String name = ingredientNameTextField.getText();
-                String foodGroup = foodGroupTextField.getText();
-                boolean inStock = inStockCheckBox.getState();
-                String nutritionFacts = nutritionFactsTextArea.getText();
-                Ingredients ingredient = new Ingredients(name, foodGroup, inStock, nutritionFacts);
+        if (ingredientIsNotEmpty(ingredientNameTextField.getText()) && ingredientDoesNotAlreadyExist(true, ingredientNameTextField.getText())) {  // Before submitting changes to the database, validate the ingredient (make sure it's name is not null and that there is not already an ingredient with that name).
+            // Capture modifications before removing the item (remember: removing items from combo box will cause the ingredientsComboBoxActionPerformed method to be called, as a new item will automatically be selected)
+            String name = ingredientNameTextField.getText();
+            String foodGroup = foodGroupTextField.getText();
+            boolean inStock = inStockCheckBox.getState();
+            String nutritionFacts = nutritionFactsTextArea.getText();
+            Ingredients ingredient = new Ingredients(name, foodGroup, inStock, nutritionFacts);
 
-                
-                String oldName = ingredientsComboBox.getSelectedItem().toString();
-                if (oldName.equals(name)) {  // Old and new names are equal. Don't try inserting into Ingredients and CallsFor tables.
-                    updateIngredientsNoNameChange(name, foodGroup, inStock, nutritionFacts);
-                } else {  // Ingredient name has been changed.
-                    updateIngredientsNameChange(name, foodGroup, inStock, nutritionFacts);
-                }
-
-                ingredientsList.remove(ingredientsComboBox.getSelectedIndex());  // Remove the item from the combo box and list (will add the modified item shortly)
-                ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
-
-                submitChangesButton.setText("Edit Ingredient");
-                addNewIngredientButton.setVisible(true);
-                // Prevent editing of ingredients.
-                inStockCheckBox.setEnabled(false);
-                foodGroupTextField.setEditable(false);
-                nutritionFactsTextArea.setEditable(false);
-
-                ingredientNameLabel.setVisible(false);
-                ingredientNameTextField.setVisible(false);
-                ingredientsComboBox.setVisible(true);
-                deleteIngredientButton.setText("Delete Ingredient");
-
-                // Place modified item in the list and combo box.
-                ingredientsList.add(0, ingredient);
-                ingredientsComboBox.insertItemAt(name, 0);
-
-                // Select the edited item.
-                ingredientsComboBox.setSelectedIndex(0);
+            String oldName = ingredientsComboBox.getSelectedItem().toString();
+            if (oldName.equals(name)) {  // Old and new names are equal. Don't try inserting into Ingredients and CallsFor tables.
+                updateIngredientsNoNameChange(name, foodGroup, inStock, nutritionFacts);
+            } else {  // Ingredient name has been changed.
+                updateIngredientsNameChange(name, foodGroup, inStock, nutritionFacts);
             }
+
+            ingredientsList.remove(ingredientsComboBox.getSelectedIndex());  // Remove the item from the combo box and list (will add the modified item shortly)
+            ingredientsComboBox.removeItemAt(ingredientsComboBox.getSelectedIndex());
+
+            submitChangesButton.setText("Edit Ingredient");
+            addNewIngredientButton.setVisible(true);
+            // Prevent editing of ingredients.
+            inStockCheckBox.setEnabled(false);
+            foodGroupTextField.setEditable(false);
+            nutritionFactsTextArea.setEditable(false);
+
+            ingredientNameLabel.setVisible(false);
+            ingredientNameTextField.setVisible(false);
+            ingredientsComboBox.setVisible(true);
+            deleteIngredientButton.setText("Delete Ingredient");
+
+            // Place modified item in the list and combo box.
+            ingredientsList.add(0, ingredient);
+            ingredientsComboBox.insertItemAt(name, 0);
+
+            // Select the edited item.
+            ingredientsComboBox.setSelectedIndex(0);
+        }
     }//GEN-LAST:event_submitChangesButtonActionPerformed
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
 
     }//GEN-LAST:event_formKeyPressed
 
     private void addNewIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewIngredientButtonActionPerformed
+        ingredientInfoPanel.setVisible(true);
         if (addNewIngredientButton.getText().equals("Add New Ingredient")) {  // User wants to add a new ingredient. Hide some elements.
             addNewIngredientButton.setText("Submit New Ingredient");
 
@@ -391,6 +418,9 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private void deleteIngredientButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteIngredientButtonActionPerformed
         submitChangesButton.setText("Edit Ingredient");
         if (deleteIngredientButton.getText().equals("Cancel")) {  //Canceling changes/addition of new ingredient.
+            if (ingredientsList.size() == 0) {  // hide information about ingredients, if there are none
+                ingredientInfoPanel.setVisible(false);
+            }
             addNewIngredientButton.setVisible(true);
             // Was in adding a new ingredient mode. Go back to viewing ingredient mode.
             addNewIngredientButton.setText("Add New Ingredient");
@@ -403,8 +433,10 @@ public class IngredientsGUI extends javax.swing.JPanel {
             ingredientNameTextField.setVisible(false);
             ingredientNameLabel.setVisible(false);
 
-            // Select first ingredient.
-            ingredientsComboBox.setSelectedIndex(0);
+            // Select first ingredient, if there's anything to pick.
+            if (ingredientsComboBox.getItemCount() > 0) {
+                ingredientsComboBox.setSelectedIndex(0);
+            }
         } else if (JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete ingredient?", "Confirm",
                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             // yes option
@@ -505,7 +537,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private void deleteFromIngredients(String ingredient) {
         try {
             String sqlDeleteStmt = "delete from INGREDIENTS where name = '" + ingredient.replace("'", "''") + "'";
-            
+
             conn = ConnectDb.setupConnection();
             stmt = (OracleStatement) conn.createStatement();
             stmt.execute(sqlDeleteStmt);
@@ -529,6 +561,7 @@ public class IngredientsGUI extends javax.swing.JPanel {
     private javax.swing.JButton deleteIngredientButton;
     private javax.swing.JTextField foodGroupTextField;
     private java.awt.Checkbox inStockCheckBox;
+    private javax.swing.JPanel ingredientInfoPanel;
     private javax.swing.JLabel ingredientNameLabel;
     private javax.swing.JTextField ingredientNameTextField;
     private javax.swing.JComboBox<String> ingredientsComboBox;

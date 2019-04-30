@@ -284,7 +284,7 @@ public class MealPlanGUI extends javax.swing.JPanel {
                     if (row == data.size()) {
                         data.add(new String[7]); // add row
                     }                    // set row values
-                    data.get(row)[i] = mealDay.getMealTitle() + " " + mealDay.getMealName();
+                    data.get(row)[i] = mealDay.getMealTitle() + ": " + mealDay.getMealName();
 //                    scheduleTable.getModel().setValueAt(data.get(row)[i], row, i);
                     System.out.println(data.get(row)[i]);
                     row++;

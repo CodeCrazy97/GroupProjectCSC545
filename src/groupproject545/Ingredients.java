@@ -113,7 +113,7 @@ public class Ingredients {
         conn = ConnectDb.setupConnection();
         List<Ingredients> AllIngredients = new ArrayList<Ingredients>();
         try {
-            String sqlStatement = "select * from INGREDIENTS order by name";  // Get all ingredients, sorting by name.
+            String sqlStatement = "select * from INGREDIENTS order by upper(name)";  // Get all ingredients, sorting by name.
 
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 

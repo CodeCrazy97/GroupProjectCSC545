@@ -51,7 +51,7 @@ public class Recipes {
 
         conn = ConnectDb.setupConnection();
         try {
-            String sqlStatement = "select * from RECIPES order by title";
+            String sqlStatement = "select * from RECIPES order by upper(title)";
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {

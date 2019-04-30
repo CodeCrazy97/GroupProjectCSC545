@@ -111,16 +111,20 @@ public class WelcomeScreenGUI extends javax.swing.JPanel {
                     String mealTitle = rs.getString(2);
                     String recipe = rs.getString(3);
                     if (!daysShown.contains(dayOfWeek)) {  // day not already listed
-                        todaysMealsTextArea.append("________________\n" + dayOfWeek.toUpperCase());
+                        if (todaysMealsTextArea.getText().equals("")) {
+                            todaysMealsTextArea.append("________________\n" + dayOfWeek.toUpperCase());
+                        } else {
+                            todaysMealsTextArea.append("\n________________\n" + dayOfWeek.toUpperCase());
+                        }
                         daysShown.add(dayOfWeek);
                     }
                     if (!mealTitlesShown.contains(mealTitle + dayOfWeek)) {  // This meal (lunch, dinner, snack, etc.) on this specific day (Sunday, Monday, etc.) not already shown
-                        todaysMealsTextArea.append("\n\n" + mealTitle + "\n");
+                        todaysMealsTextArea.append("\n\n" + mealTitle);
                         mealTitlesShown.add(mealTitle + dayOfWeek);
                     }
 
                     // always show recipes
-                    todaysMealsTextArea.append(recipe + "\n");
+                    todaysMealsTextArea.append("\n" + recipe);
 
                 }
 

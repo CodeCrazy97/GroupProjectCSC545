@@ -205,6 +205,7 @@ public class RecipesGUI extends javax.swing.JPanel {
         editRecipeButton = new javax.swing.JButton();
         recipeTitleTextField = new javax.swing.JTextField();
         removeIngredientButton = new javax.swing.JButton();
+        recipeTitleLabel2 = new javax.swing.JLabel();
         addNewRecipeButton = new javax.swing.JButton();
 
         filteredRecipesTextArea.setEditable(false);
@@ -354,6 +355,8 @@ public class RecipesGUI extends javax.swing.JPanel {
             }
         });
 
+        recipeTitleLabel2.setText("Recipe title:");
+
         javax.swing.GroupLayout recipesInfoPanelLayout = new javax.swing.GroupLayout(recipesInfoPanel);
         recipesInfoPanel.setLayout(recipesInfoPanelLayout);
         recipesInfoPanelLayout.setHorizontalGroup(
@@ -378,7 +381,9 @@ public class RecipesGUI extends javax.swing.JPanel {
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(recipesInfoPanelLayout.createSequentialGroup()
-                                    .addGap(173, 173, 173)
+                                    .addGap(121, 121, 121)
+                                    .addComponent(recipeTitleLabel2)
+                                    .addGap(18, 18, 18)
                                     .addComponent(recipesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addContainerGap())
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, recipesInfoPanelLayout.createSequentialGroup()
@@ -404,7 +409,9 @@ public class RecipesGUI extends javax.swing.JPanel {
             recipesInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(recipesInfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(recipesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(recipesInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(recipesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(recipeTitleLabel2))
                 .addGap(26, 26, 26)
                 .addGroup(recipesInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(recipeTitleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -544,6 +551,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             ingredientsLabel.setVisible(false);
 
             editRecipeButton.setVisible(false);
+            recipeTitleLabel2.setVisible(false);
             recipesComboBox.setVisible(false);
             changeEditingMode(true);
         } else // Do opposite of if condition. Try to add recipe to screen and database.
@@ -564,6 +572,7 @@ public class RecipesGUI extends javax.swing.JPanel {
                 recipes.add(0, recipe);
                 recipesComboBox.insertItemAt(title, 0);
 
+                recipeTitleLabel2.setVisible(true);
                 recipesComboBox.setVisible(true);
                 // Select the new item.
                 recipesComboBox.setSelectedIndex(0);
@@ -620,6 +629,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             // Cancel out of edit mode. Select first recipe so the fields will populate with its data.
             changeEditingMode(false);  // Get out of edit mode.
             recipesComboBox.setVisible(true);
+            recipeTitleLabel2.setVisible(true);
 
             ingredientsLabel.setVisible(true);
             ingredientsComboBox.setVisible(true);
@@ -650,6 +660,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             instructionsTextArea.setText(recipes.get(pickedRecipe).getInstructions());
             recipeCategoryTextField.setText(recipes.get(pickedRecipe).getCategory());
 
+            recipeTitleLabel2.setVisible(false);
             recipesComboBox.setVisible(false);
             editRecipeButton.setText("Submit Changes");
             changeEditingMode(true);
@@ -685,6 +696,7 @@ public class RecipesGUI extends javax.swing.JPanel {
             recipes.add(0, recipe);
             recipesComboBox.insertItemAt(title, 0);
 
+            recipeTitleLabel2.setVisible(true);
             recipesComboBox.setVisible(true);
             // Select the new item.
             recipesComboBox.setSelectedIndex(0);
@@ -989,6 +1001,7 @@ public class RecipesGUI extends javax.swing.JPanel {
     private javax.swing.JLabel newIngredientLabel;
     private javax.swing.JTextField recipeCategoryTextField;
     private javax.swing.JLabel recipeTitleLabel;
+    private javax.swing.JLabel recipeTitleLabel2;
     private javax.swing.JTextField recipeTitleTextField;
     private javax.swing.JComboBox<String> recipesComboBox;
     private javax.swing.JPanel recipesInfoPanel;

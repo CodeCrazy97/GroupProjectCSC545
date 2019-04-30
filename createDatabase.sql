@@ -151,6 +151,8 @@ end;
 /
 
 
+
+
 insert into ingredients values('broccoli','vegetables','Y','high in fiber, very high in vitamin C and has potassium, B6 and vitamin A'); 
 insert into ingredients values('tuna','fish','N','calories per 8oz: 116 calories');
 insert into ingredients values('hamburger','meat','N','Calories per single patty: 266');  
@@ -183,22 +185,15 @@ insert into ingredients values('colby cheese','dairy','N','Calories per 8oz: 122
 insert into ingredients values('pepperjack cheese','dairy','Y','Calories per 8oz: 85');                           
 insert into ingredients values('lemon pepper seasoing','seasoning','Y','Calories per 8oz: 18');
 
-insert into recipes values('recipe1','mix ingredients','category2');
-insert into recipes values('recipe2','instruction2','category2');
-insert into recipes values('recipe3','instruction3','category3');                           
-insert into recipes values('recipe4','instruction4','category4');                           
-insert into recipes values('recipe5','instruction5','category5');
-insert into recipes values('recipe6','instruction6','category6');
-insert into recipes values('recipe7','instruction7','category7');    
-insert into recipes values('recipe8','instruction8','category8');
-insert into recipes values('recipe9','instruction9','category9');
-insert into recipes values('recipe10','instruction10','category10');
-insert into recipes values('recipe11','instruction11','category11');
-insert into recipes values('recipe12','instruction12','category12');
+insert into recipes values('Milky Asparagus','mix ingredients','Healthy life foods');
+insert into recipes values ('Salty pepper', 'salt pepper & enjoy!', 'Mediterranean food');
 
 
-insert into callsFor values ('asparagus', 'recipe1');
-insert into callsFor values ('2% milk', 'recipe1');
+insert into callsFor values ('asparagus', 'Milky Asparagus');
+insert into callsFor values ('2% milk', 'Milky Asparagus');
+
+insert into callsFor values ('salt', 'Salty pepper');
+insert into callsFor values ('pepper', 'Salty pepper');
 
 
 commit;

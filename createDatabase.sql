@@ -7,6 +7,8 @@ Group 3:
 Evan Wright, Chris Ward, Corey Robinson, Ethan Vaughan
 */
 
+set define off;
+
 drop trigger ingredients_update_t2;
 drop trigger recipes_update_t1;
 drop trigger recipes_update_t2;

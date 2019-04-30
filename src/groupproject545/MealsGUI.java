@@ -120,7 +120,7 @@ public class MealsGUI extends javax.swing.JPanel {
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
                 String recipeTitle = rs.getString(1);
-                
+
                 usedRecipes.add(recipeTitle);
             }
 
@@ -142,13 +142,12 @@ public class MealsGUI extends javax.swing.JPanel {
             String sqlStatement = "select * from RECIPES where title <> all(select "
                     + "recipeTitle from SERVEDDURINGMEAL where mealName = '" + meal.replace("'", "''") + "')";  // Get all recipes not served in this meal.
 
-            
             pst = (OraclePreparedStatement) conn.prepareStatement(sqlStatement);
 
             rs = (OracleResultSet) pst.executeQuery();
             while (rs.next()) {
                 String recipeTitle = rs.getString(1);
-                
+
                 unUsedRecipes.add(recipeTitle);
             }
 
@@ -649,7 +648,7 @@ public class MealsGUI extends javax.swing.JPanel {
             try {
                 String sqlInsertStmt = "insert into SERVEDDURINGMEAL values ('"
                         + newUsedRecipes.get(i).replace("'", "''") + "', '" + mealName.replace("'", "''") + "')";
-
+                System.out.println("sql for inserting into servedduringmeal:" + sqlInsertStmt);
                 conn = ConnectDb.setupConnection();
                 stmt = conn.createStatement();
                 stmt.executeUpdate(sqlInsertStmt);
@@ -664,6 +663,8 @@ public class MealsGUI extends javax.swing.JPanel {
                 }
             }
         }
+        // clear items for next insert into (if there will be one)
+        newUsedRecipes.clear();
     }
 
     private void deleteMeal(String newName) {
@@ -708,7 +709,7 @@ public class MealsGUI extends javax.swing.JPanel {
     private void insertIntoMeals(String mealName) {
         try {
             String sqlInsertStmt = "insert into MEALS values ('" + mealName.replace("'", "''") + "')";
-
+            System.out.println("insert into meals:" + sqlInsertStmt);
             conn = ConnectDb.setupConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate(sqlInsertStmt);

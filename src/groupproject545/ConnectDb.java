@@ -19,6 +19,7 @@ public class ConnectDb {
         String jdbcDriver = "oracle.jdbc.driver.OracleDriver";
         
         // *** EKU connection ***
+<<<<<<< HEAD
         /*
         String jdbcUrl = "jdbc:oracle:thin:@cswinserv.eku.edu:1521:cscdb";  // URL for the database including the protocol (jdbc), the vendor (oracle), the driver (thin), the server (csshrpt.eku.edu), the port number (1521), database instance name (cscdb)
 
@@ -26,6 +27,12 @@ public class ConnectDb {
         String password = "2108";
         */
         String jdbcUrl = "jdbc:oracle:thin:@localhost:1521:orcl";  // URL for the database including the protocol (jdbc), the vendor (oracle), the driver (thin), the server (csshrpt.eku.edu), the port number (1521), database instance name (cscdb)
+=======
+        String jdbcUrl = "jdbc:oracle:thin:@localhost:1521:db";  // URL for the database including the protocol (jdbc), the vendor (oracle), the driver (thin), the server (csshrpt.eku.edu), the port number (1521), database instance name (cscdb)
+
+        String username = "username";
+        String password = "password";
+>>>>>>> c38ebde221b3ea5bfe66f6154af2d9e024392e54
 
         String username = "ethan545";
         String password = "1234";
